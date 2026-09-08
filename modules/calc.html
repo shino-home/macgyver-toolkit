@@ -1,0 +1,53 @@
+<!-- 1. 만능 계산기 모듈 (HTML 조각) -->
+<div class="module-header">
+  <h2>🧮 만능 계산기</h2>
+  <div class="calc-tabs">
+    <button class="calc-tab-btn active" data-tab="tab-age">만 나이/띠</button>
+    <button class="calc-tab-btn" data-tab="tab-dday">D-Day 카운터</button>
+    <button class="calc-tab-btn" data-tab="tab-date">날짜 계산기</button>
+  </div>
+</div>
+
+<!-- TAB 1: 만 나이 / 연 나이 / 띠 -->
+<div id="tab-age" class="calc-tab-content active">
+  <div class="calc-card">
+    <label class="calc-label">생년월일 선택</label>
+    <input type="date" id="birth-date-input" class="pastel-input">
+    <div class="calc-result-grid">
+      <div class="res-box"><span class="res-title">만 나이</span><span id="res-legal-age" class="res-val">- 세</span></div>
+      <div class="res-box"><span class="res-title">연 나이</span><span id="res-year-age" class="res-val">- 세</span></div>
+      <div class="res-box"><span class="res-title">띠</span><span id="res-zodiac" class="res-val">-</span></div>
+      <div class="res-box"><span class="res-title">다음 생일</span><span id="res-next-birthday" class="res-val">D--</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2: D-Day 카운터 -->
+<div id="tab-dday" class="calc-tab-content">
+  <div class="calc-card">
+    <div class="input-row">
+      <input type="text" id="dday-title-input" class="pastel-input" placeholder="기념일 이름 (예: 커플 100일)">
+      <input type="date" id="dday-date-input" class="pastel-input">
+      <button id="add-dday-btn" class="pastel-action-btn">등록</button>
+    </div>
+    <div id="dday-list" class="dday-grid"></div>
+  </div>
+</div>
+
+<!-- TAB 3: 날짜 산출 (D+ / D- 며칠 뒤) -->
+<div id="tab-date" class="calc-tab-content">
+  <div class="calc-card">
+    <div class="input-row">
+      <input type="date" id="base-date-input" class="pastel-input">
+      <select id="date-calc-type" class="pastel-input">
+        <option value="after">일 뒤 (+)</option>
+        <option value="before">일 전 (-)</option>
+      </select>
+      <input type="number" id="days-offset-input" class="pastel-input" placeholder="일수 입력 (예: 100)" min="1">
+      <button id="calc-date-btn" class="pastel-action-btn">계산</button>
+    </div>
+    <div class="calc-single-result">
+      <span id="res-calculated-date" class="res-highlight">날짜를 입력해 주세요</span>
+    </div>
+  </div>
+</div>

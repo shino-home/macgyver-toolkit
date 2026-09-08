@@ -2,79 +2,67 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>맥가이버 툴킷 (MacGyver Toolkit)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>MacGyver Toolkit</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- 모바일용 상단 헤더 (햄버거 버튼) -->
-  <header class="mobile-header">
-    <button id="menu-toggle-btn" class="hamburger-btn">🐶</button>
-    <h1 class="mobile-title">맥가이버 툴킷</h1>
-  </header>
-
   <!-- 좌측 사이드바 -->
-  <aside id="sidebar" class="sidebar">
-    <div class="sidebar-top">
-      <div class="brand">
-        <div class="brand-icon">🐶</div>
-        <div class="brand-title">맥가이버 툴킷</div>
+  <aside class="sidebar">
+    <div class="brand" id="go-home-btn" title="홈 대시보드로 이동">
+      <div class="brand-badge">M</div>
+      <div class="brand-text">
+        <span class="brand-title">MacGyver</span>
+        <span class="brand-sub">Toolkit</span>
       </div>
-      
-      <nav class="menu-list">
-        <button class="menu-item calc active" data-target="calc-section">🧮 만능 계산기</button>
-        <button class="menu-item speech" data-target="speech-section">🗣️ 스피치 테라피</button>
-        <button class="menu-item board" data-target="board-section">💍 결혼 & 여행 보드</button>
-        <button class="menu-item memo" data-target="memo-section">📝 스마트 메모장</button>
-      </nav>
     </div>
 
-    <div class="security-badge">
-      🔒 E2EE 종단간 암호화 적용
+    <nav class="nav-menu">
+      <button class="nav-btn calc" data-module="calc">
+        <div class="icon-box">🧮</div>
+        <div class="label-box">
+          <span class="main-label">만능 계산기</span>
+          <span class="sub-label">Age & D-Day</span>
+        </div>
+      </button>
+
+      <button class="nav-btn speech" data-module="speech">
+        <div class="icon-box">🗣️</div>
+        <div class="label-box">
+          <span class="main-label">스피치 테라피</span>
+          <span class="sub-label">Practice & Timer</span>
+        </div>
+      </button>
+
+      <button class="nav-btn board" data-module="board">
+        <div class="icon-box">💍</div>
+        <div class="label-box">
+          <span class="main-label">결혼 & 여행 보드</span>
+          <span class="sub-label">Shared E2EE</span>
+        </div>
+      </button>
+
+      <button class="nav-btn memo" data-module="memo">
+        <div class="icon-box">📝</div>
+        <div class="label-box">
+          <span class="main-label">스마트 메모장</span>
+          <span class="sub-label">Private Storage</span>
+        </div>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span class="security-status">🔒 E2EE Encrypted</span>
     </div>
   </aside>
 
-  <!-- 메인 콘텐츠 영역 -->
-  <main class="main-content">
-    <section id="calc-section" class="content-section active">
-      <h2>🧮 만능 계산기</h2>
-      <p class="section-desc">실시간 동적 나이 계산기 및 D-Day 지원 준비 중입니다.</p>
-    </section>
-
-    <section id="speech-section" class="content-section">
-      <h2>🗣️ 스피치 테라피</h2>
-      <p class="section-desc">발음 교정 5단계 모듈 준비 중입니다.</p>
-    </section>
-
-    <section id="board-section" class="content-section">
-      <h2>💍 결혼 & 여행 보드</h2>
-      <p class="section-desc">E2EE 암호화 예산 공유 보드 준비 중입니다.</p>
-    </section>
-
-    <section id="memo-section" class="content-section">
-      <h2>📝 스마트 메모장</h2>
-      <p class="section-desc">프라이빗 메모장 준비 중입니다.</p>
-    </section>
-
-    <!-- 액션 테스트 버튼 -->
-    <div class="action-bar">
-      <button id="save-demo-btn" class="save-btn">기록 저장 테스트</button>
-    </div>
-
-    <!-- AI 자율 보행 포차코 마스코트 -->
-    <div id="pochacco" class="pochacco-mascot" title="나를 눌러보거나 끌어봐!">
-      <span class="pochacco-avatar">🐶</span>
-      <div id="pochacco-bubble" class="speech-bubble">오늘도 반가워요!</div>
-    </div>
-
-    <!-- 0.5초 피켓 토스트 레이어 -->
-    <div id="toast-picket" class="toast-picket">
-      <span class="picket-flag">🚩</span>
-      <span id="toast-message" class="picket-text">저장 완료!</span>
-    </div>
+  <!-- 메인 워크스페이스 (모듈이 동적으로 불러와져 삽입되는 공간) -->
+  <main class="main-content" id="workspace-container">
+    <!-- 기본 로딩 또는 홈 화면 내용이 표시됩니다 -->
   </main>
 
+  <!-- 중앙 통제 메인 라우터 스크립트 -->
   <script src="app.js"></script>
 </body>
 </html>

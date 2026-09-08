@@ -1,0 +1,108 @@
+<!-- 2. 스피치 테라피 모듈 (HTML 조각) -->
+<header class="speech-header">
+  <nav class="category-tabs" id="category-tabs">
+    <button id="toggle-timer-btn" class="timer-toggle-btn">
+      <span class="btn-icon">⏱️</span> <span id="header-timer-text">시간측정</span>
+    </button>
+    <div class="tab-divider"></div>
+    <button class="tab-btn active" data-cat="basic">1. 기초연습</button>
+    <button class="tab-btn" data-cat="vowelWord2">2. 모음 2글자</button>
+    <button class="tab-btn" data-cat="consonantWord2">3. 자음 2글자</button>
+    <button class="tab-btn" data-cat="wordRepeat">4. 3~5글자 반복</button>
+    <button class="tab-btn" data-cat="sentence">5. 문장 연습</button>
+  </nav>
+
+  <div class="header-actions">
+    <button class="streak-badge" id="streak-badge-btn" title="출석 달력 보기">
+      🔥 <span id="streak-count">1</span>일째
+    </button>
+    <button id="shuffle-btn" class="icon-btn">🎲 셔플</button>
+    <button id="toggle-settings-btn" class="icon-btn highlight">⚙️ 조절</button>
+  </div>
+</header>
+
+<div class="speech-workspace">
+  <!-- 플로팅 타이머 위젯 (기본 숨김 처리) -->
+  <aside class="timer-widget hidden" id="timer-widget">
+    <div class="timer-header" id="timer-drag-handle">
+      <div class="widget-title-group">
+        <span class="pulse-dot"></span>
+        <span class="widget-title">SPEECH TIMER</span>
+      </div>
+      <button id="minimize-timer-btn" class="mini-btn" title="상단 탭으로 접기">−</button>
+    </div>
+    
+    <div class="clock-display-container">
+      <div id="clock-display" class="time-display">00:00</div>
+    </div>
+
+    <div class="widget-body" id="widget-body">
+      <div class="mode-selector">
+        <label class="radio-label">
+          <input type="radio" name="clock-mode" value="stopwatch" checked> 
+          <span>스톱워치</span>
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="clock-mode" value="timer"> 
+          <span>타이머</span>
+        </label>
+      </div>
+
+      <div id="timer-input-group" class="timer-input-row hidden">
+        <input type="number" id="timer-min" min="0" max="99" value="05"> <span class="unit">분</span>
+        <input type="number" id="timer-sec" min="0" max="59" value="00"> <span class="unit">초</span>
+      </div>
+
+      <div class="timer-controls">
+        <button id="start-btn" class="btn primary">시작</button>
+        <button id="pause-btn" class="btn warning">일시정지</button>
+        <button id="reset-btn" class="btn danger">리셋</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 플로팅 출석 달력 위젯 -->
+  <aside class="attendance-modal hidden" id="attendance-modal">
+    <div class="calendar-header" id="calendar-drag-handle">
+      <div class="cal-title-group">
+        <span class="cal-icon">📅</span>
+        <span class="cal-title" id="cal-month-title">출석 현황</span>
+      </div>
+      <div class="cal-view-toggle">
+        <button id="view-week-btn" class="cal-toggle-btn active">주간</button>
+        <button id="view-month-btn" class="cal-toggle-btn">월간</button>
+      </div>
+      <button id="close-cal-btn" class="close-btn">&times;</button>
+    </div>
+
+    <div class="calendar-body">
+      <div class="cal-days-header">
+        <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+      </div>
+      <div class="cal-grid" id="calendar-grid"></div>
+    </div>
+  </aside>
+
+  <!-- 단어/문장 그리드 영역 -->
+  <section class="word-grid-container">
+    <div class="word-grid basic" id="word-grid"></div>
+  </section>
+</div>
+
+<!-- 서랍형 조절 패널 -->
+<div class="settings-drawer hidden" id="settings-drawer">
+  <div class="drawer-header">
+    <h3>📐 화면 미세 조절</h3>
+    <button id="close-drawer-btn" class="close-btn">&times;</button>
+  </div>
+  <div class="drawer-body">
+    <div class="control-item">
+      <label>기본 글자 크기: <span id="font-size-val">2.0</span>rem</label>
+      <input type="range" id="font-size-slider" min="1.2" max="3.5" step="0.1" value="2.0">
+    </div>
+    <div class="control-item theme-item">
+      <label>테마 모드</label>
+      <button id="theme-toggle-btn" class="theme-btn">🌙 다크 모드 전환</button>
+    </div>
+  </div>
+</div>
