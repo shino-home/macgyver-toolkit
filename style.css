@@ -1,0 +1,260 @@
+:root {
+  --bg-color: #fcfbfa;
+  --sidebar-bg: #ffffff;
+  --primary-blue: #e3f2fd;
+  --primary-green: #e8f5e9;
+  --primary-yellow: #fffde7;
+  --primary-pink: #fce4ec;
+  --text-main: #37474f;
+  --text-sub: #78909c;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 모바일 전용 헤더 */
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: var(--sidebar-bg);
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 16px;
+  align-items: center;
+  gap: 12px;
+  z-index: 10;
+}
+
+.hamburger-btn {
+  border: none;
+  background: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.mobile-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* 사이드바 */
+.sidebar {
+  width: 260px;
+  background-color: var(--sidebar-bg);
+  border-right: 2px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 16px;
+  z-index: 20;
+  transition: transform 0.3s ease;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--primary-yellow);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.brand-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background-color: transparent;
+  color: var(--text-main);
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-align: left;
+}
+
+.menu-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.menu-item.calc { background-color: var(--primary-blue); }
+.menu-item.speech { background-color: var(--primary-green); }
+.menu-item.board { background-color: var(--primary-yellow); }
+.menu-item.memo { background-color: var(--primary-pink); }
+
+.security-badge {
+  background-color: #f5f5f5;
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--text-sub);
+}
+
+/* 메인 영역 */
+.main-content {
+  flex: 1;
+  position: relative;
+  padding: 40px;
+  overflow: hidden;
+}
+
+.content-section {
+  display: none;
+}
+
+.content-section.active {
+  display: block;
+}
+
+.section-desc {
+  margin-top: 12px;
+  color: var(--text-sub);
+}
+
+.action-bar {
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+}
+
+.save-btn {
+  padding: 12px 24px;
+  background: var(--text-main);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* 자율 보행 포차코 마스코트 */
+.pochacco-mascot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90px;
+  height: 90px;
+  background-color: var(--primary-yellow);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pochacco-avatar {
+  font-size: 48px;
+  pointer-events: none;
+}
+
+/* 말풍선 */
+.speech-bubble {
+  position: absolute;
+  top: -40px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.speech-bubble.show {
+  opacity: 1;
+}
+
+/* 찌그러지는 젤리 피드백 */
+.pochacco-mascot:active {
+  cursor: grabbing;
+  transform: scale(1.25, 0.75) !important;
+}
+
+/* 0.5초 토스트 피켓 */
+.toast-picket {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 2px solid var(--primary-pink);
+  padding: 16px 28px;
+  border-radius: 24px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 100;
+}
+
+.toast-picket.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.picket-flag { font-size: 28px; }
+.picket-text { font-weight: 700; color: #d81b60; }
+
+/* 모바일 반응형 Breakpoint */
+@media (max-width: 768px) {
+  .mobile-header { display: flex; }
+  .sidebar {
+    position: fixed;
+    top: 56px;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { padding-top: 80px; }
+}
