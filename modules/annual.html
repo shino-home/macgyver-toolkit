@@ -1,134 +1,580 @@
-<!-- 5. 연간 가계부 샘플 모듈 -->
+<!-- 연간 가계부 모듈 -->
 
 <section id="annual-section" class="content-section active">
 
-  <!-- 모듈 상단 -->
+  <!-- ==============================
+       가계부 헤더
+       ============================== -->
   <div class="annual-header">
-    <div>
-      <h2>💰 연간 가계부</h2>
-      <p>2026년 9~12월 시범운영 샘플</p>
+
+    <div class="annual-title-area">
+      <h2>💰 가계부</h2>
+      <p>월별 지출과 연간 재무현황을 관리합니다.</p>
     </div>
 
-    <div class="annual-tabs">
-      <button class="annual-tab-btn active" data-tab="annual-monthly">
+    <div class="annual-view-tabs">
+      <button
+        class="annual-view-tab active"
+        data-view="monthly"
+      >
         월별 가계부
       </button>
-      <button class="annual-tab-btn" data-tab="annual-yearly">
+
+      <button
+        class="annual-view-tab"
+        data-view="yearly"
+      >
         연간 가계부
       </button>
     </div>
+
   </div>
 
 
-  <!-- ==========================================
-       TAB 1. 월별 가계부
-       ========================================== -->
-  <div id="annual-monthly" class="annual-tab-content active">
+  <!-- ==================================================
+       월별 가계부
+       ================================================== -->
+  <div
+    id="annual-monthly-view"
+    class="annual-view active"
+  >
 
-    <!-- 월 선택 -->
-    <div class="annual-month-selector">
-      <button id="annual-prev-month" class="annual-month-arrow">‹</button>
+    <!-- 연도 / 월 선택 -->
+    <div class="annual-period-bar">
 
-      <div class="annual-current-month">
-        <span id="annual-month-label">2026년 9월</span>
-      </div>
+      <button
+        id="annual-prev-month"
+        class="annual-period-arrow"
+      >
+        ‹
+      </button>
 
-      <button id="annual-next-month" class="annual-month-arrow">›</button>
+      <button
+        id="annual-period-button"
+        class="annual-period-title"
+        title="연도와 월 선택"
+      >
+        2026년 9월
+      </button>
+
+      <button
+        id="annual-next-month"
+        class="annual-period-arrow"
+      >
+        ›
+      </button>
+
     </div>
 
 
     <!-- 월별 요약 -->
     <div class="annual-summary-grid">
 
-      <div class="annual-summary-card living">
-        <span class="annual-summary-label">생활비</span>
-        <strong id="monthly-living-total">0원</strong>
-        <span class="annual-summary-sub">
-          목표 1,600,000원
-        </span>
+      <!-- 생활비 -->
+      <button
+        class="annual-summary-card living"
+        data-goal-category="living"
+        type="button"
+      >
+
+        <div class="annual-summary-top">
+          <span>생활비</span>
+          <span class="annual-goal-hint">
+            목표 설정
+          </span>
+        </div>
+
+        <strong id="monthly-living-total">
+          0원
+        </strong>
+
+        <div class="annual-summary-meta">
+          <span id="monthly-living-goal">
+            목표 미설정
+          </span>
+
+          <span id="monthly-living-percent">
+            -
+          </span>
+        </div>
 
         <div class="annual-progress">
           <div id="monthly-living-progress"></div>
         </div>
 
-        <span id="monthly-living-percent" class="annual-progress-text">
-          0%
-        </span>
-      </div>
+      </button>
 
-      <div class="annual-summary-card fixed">
-        <span class="annual-summary-label">고정지출</span>
-        <strong id="monthly-fixed-total">0원</strong>
-        <span class="annual-summary-sub">
-          생활비 집계 제외
-        </span>
-      </div>
 
+      <!-- 고정지출 -->
+      <button
+        class="annual-summary-card fixed"
+        data-goal-category="fixed"
+        type="button"
+      >
+
+        <div class="annual-summary-top">
+          <span>고정지출</span>
+          <span class="annual-goal-hint">
+            목표 설정
+          </span>
+        </div>
+
+        <strong id="monthly-fixed-total">
+          0원
+        </strong>
+
+        <div class="annual-summary-meta">
+          <span id="monthly-fixed-goal">
+            목표 미설정
+          </span>
+
+          <span id="monthly-fixed-percent">
+            -
+          </span>
+        </div>
+
+        <div class="annual-progress">
+          <div id="monthly-fixed-progress"></div>
+        </div>
+
+      </button>
+
+
+      <!-- 비정기지출 -->
       <div class="annual-summary-card irregular">
-        <span class="annual-summary-label">비정기지출</span>
-        <strong id="monthly-irregular-total">0원</strong>
-        <span class="annual-summary-sub">
-          생활비 집계 제외
-        </span>
-      </div>
 
-      <div class="annual-summary-card total">
-        <span class="annual-summary-label">월 생활비 사용액</span>
-        <strong id="monthly-expense-total">0원</strong>
-        <span class="annual-summary-sub">
-          생활비 기준
-        </span>
+        <div class="annual-summary-top">
+          <span>비정기지출</span>
+          <span class="annual-summary-note">
+            별도 관리
+          </span>
+        </div>
+
+        <strong id="monthly-irregular-total">
+          0원
+        </strong>
+
+        <div class="annual-summary-meta">
+          <span>경조사 + 빅이벤트</span>
+        </div>
+
       </div>
 
     </div>
 
 
-    <!-- 지출 입력 -->
+    <!-- 수입 / 지출 버튼 -->
+    <div class="annual-action-row">
+
+      <button
+        id="annual-open-income"
+        class="annual-main-action income"
+      >
+        <span>＋</span>
+        <div>
+          <strong>수입 추가</strong>
+          <small>월급 · 수당 · 보너스</small>
+        </div>
+      </button>
+
+      <button
+        id="annual-open-expense"
+        class="annual-main-action expense"
+      >
+        <span>＋</span>
+        <div>
+          <strong>지출 추가</strong>
+          <small>생활비 · 고정지출 · 비정기지출</small>
+        </div>
+      </button>
+
+    </div>
+
+
+    <!-- 월별 수입 -->
     <div class="annual-card">
 
       <div class="annual-card-header">
+
         <div>
-          <h3>지출 내역 추가</h3>
-          <span>사용한 금액을 하나씩 기록해보세요.</span>
+          <h3>수입 내역</h3>
+          <span id="monthly-income-count">
+            0건
+          </span>
         </div>
+
+        <strong
+          id="monthly-income-total"
+          class="annual-section-total income"
+        >
+          0원
+        </strong>
+
       </div>
 
-      <div class="annual-input-grid">
+      <div
+        id="annual-income-list"
+        class="annual-record-list"
+      ></div>
 
-        <div class="annual-field">
-          <label>날짜</label>
-          <input
-            type="date"
-            id="annual-expense-date"
-            class="annual-input"
-          >
+    </div>
+
+
+    <!-- 월별 지출 -->
+    <div class="annual-card">
+
+      <div class="annual-card-header">
+
+        <div>
+          <h3>지출 내역</h3>
+          <span>
+            생활비 지출은 조금 더 강조해서 표시됩니다.
+          </span>
         </div>
 
-        <div class="annual-field">
-          <label>내용</label>
+        <strong
+          id="monthly-all-expense-total"
+          class="annual-section-total"
+        >
+          0원
+        </strong>
+
+      </div>
+
+      <div
+        id="annual-expense-list"
+        class="annual-record-list"
+      ></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ==================================================
+       연간 가계부
+       ================================================== -->
+  <div
+    id="annual-yearly-view"
+    class="annual-view"
+  >
+
+    <!-- 연도 선택 -->
+    <div class="annual-year-selector">
+
+      <button
+        id="annual-prev-year"
+        class="annual-period-arrow"
+      >
+        ‹
+      </button>
+
+      <strong id="annual-year-label">
+        2026년
+      </strong>
+
+      <button
+        id="annual-next-year"
+        class="annual-period-arrow"
+      >
+        ›
+      </button>
+
+    </div>
+
+
+    <!-- 총 재무 현황 -->
+    <div class="annual-finance-grid">
+
+      <div class="annual-finance-card income">
+
+        <span>총 수입</span>
+
+        <strong id="yearly-income-total">
+          0원
+        </strong>
+
+      </div>
+
+
+      <div class="annual-finance-card expense">
+
+        <span>총 지출</span>
+
+        <strong id="yearly-expense-total">
+          0원
+        </strong>
+
+      </div>
+
+
+      <div class="annual-finance-card balance">
+
+        <span>현재 잔액</span>
+
+        <strong id="yearly-balance-total">
+          0원
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <!-- 예상치 -->
+    <div class="annual-forecast-card">
+
+      <div class="annual-forecast-header">
+
+        <div>
+          <h3>예상 재무현황</h3>
+          <span>
+            예상 수입과 예상 지출을 입력하면 예상 잔액을 계산합니다.
+          </span>
+        </div>
+
+        <button
+          id="annual-edit-forecast"
+          class="annual-small-action"
+        >
+          예상치 설정
+        </button>
+
+      </div>
+
+
+      <div class="annual-forecast-grid">
+
+        <div>
+          <span>예상 수입</span>
+          <strong id="yearly-forecast-income">
+            미설정
+          </strong>
+        </div>
+
+        <div>
+          <span>예상 지출</span>
+          <strong id="yearly-forecast-expense">
+            미설정
+          </strong>
+        </div>
+
+        <div>
+          <span>예상 잔액</span>
+          <strong id="yearly-forecast-balance">
+            미설정
+          </strong>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- 비목별 총계 -->
+    <div class="annual-category-grid">
+
+      <div class="annual-year-category living">
+
+        <span>생활비 지출총계</span>
+
+        <strong id="yearly-living-total">
+          0원
+        </strong>
+
+      </div>
+
+
+      <div class="annual-year-category fixed">
+
+        <span>고정지출 총계</span>
+
+        <strong id="yearly-fixed-total">
+          0원
+        </strong>
+
+      </div>
+
+
+      <div class="annual-year-category event">
+
+        <span>경조사 총계</span>
+
+        <strong id="yearly-event-total">
+          0원
+        </strong>
+
+      </div>
+
+
+      <div class="annual-year-category big-event">
+
+        <span>빅이벤트 총계</span>
+
+        <strong id="yearly-big-event-total">
+          0원
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <!-- 태그별 통계 -->
+    <div class="annual-expand-section">
+
+      <button
+        class="annual-expand-button"
+        data-expand="yearly-tag-statistics"
+      >
+        <span>
+          🏷️ 태그별 통계
+        </span>
+
+        <span class="annual-expand-arrow">
+          ▼
+        </span>
+      </button>
+
+
+      <div
+        id="yearly-tag-statistics"
+        class="annual-expand-content"
+      >
+
+        <div
+          id="annual-living-tags"
+          class="annual-tag-grid"
+        ></div>
+
+      </div>
+
+    </div>
+
+
+    <!-- 월별 통계 -->
+    <div class="annual-expand-section">
+
+      <button
+        class="annual-expand-button"
+        data-expand="yearly-month-statistics"
+      >
+        <span>
+          📊 월별 통계
+        </span>
+
+        <span class="annual-expand-arrow">
+          ▼
+        </span>
+      </button>
+
+
+      <div
+        id="yearly-month-statistics"
+        class="annual-expand-content"
+      >
+
+        <div class="annual-table-wrapper">
+
+          <table class="annual-table">
+
+            <thead>
+
+              <tr>
+                <th>월</th>
+                <th>수입</th>
+                <th>생활비</th>
+                <th>고정지출</th>
+                <th>경조사</th>
+                <th>빅이벤트</th>
+                <th>총 지출</th>
+              </tr>
+
+            </thead>
+
+            <tbody id="annual-monthly-table"></tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ==================================================
+       지출 추가 팝업
+       ================================================== -->
+  <div
+    id="annual-expense-modal"
+    class="annual-modal"
+  >
+
+    <div class="annual-modal-backdrop"></div>
+
+    <div class="annual-modal-box">
+
+      <div class="annual-modal-header">
+
+        <div>
+          <h3>지출 추가</h3>
+          <span>지출 내역을 기록합니다.</span>
+        </div>
+
+        <button
+          class="annual-modal-close"
+          data-close-modal="annual-expense-modal"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="annual-modal-body">
+
+        <label>
+          날짜
+          <input
+            type="date"
+            id="expense-date"
+            class="annual-input"
+          >
+        </label>
+
+
+        <label>
+          내용
           <input
             type="text"
-            id="annual-expense-title"
+            id="expense-title"
             class="annual-input"
             placeholder="예: 점심 식사"
           >
-        </div>
+        </label>
 
-        <div class="annual-field">
-          <label>금액</label>
+
+        <label>
+          금액
           <input
             type="number"
-            id="annual-expense-amount"
+            id="expense-amount"
             class="annual-input"
-            placeholder="금액"
             min="0"
+            placeholder="금액 입력"
           >
-        </div>
+        </label>
 
-        <div class="annual-field">
-          <label>예산 비목</label>
 
-          <select id="annual-expense-category" class="annual-input">
+        <label>
+          카테고리
+          <select
+            id="expense-category"
+            class="annual-input"
+          >
 
             <option value="living">
               생활비
@@ -143,40 +589,36 @@
             </option>
 
           </select>
-        </div>
+        </label>
 
-        <div class="annual-field">
-          <label>세부 태그</label>
 
-          <select id="annual-expense-tag" class="annual-input">
-            <option value="식비">식비</option>
-            <option value="간식비">간식비</option>
-            <option value="쇼핑">쇼핑</option>
-          </select>
-        </div>
+        <label>
+          태그
+          <select
+            id="expense-tag"
+            class="annual-input"
+          ></select>
+        </label>
 
-        <button id="annual-add-expense" class="annual-add-btn">
-          + 지출 추가
+      </div>
+
+
+      <div class="annual-modal-footer">
+
+        <button
+          class="annual-modal-cancel"
+          data-close-modal="annual-expense-modal"
+        >
+          취소
         </button>
 
-      </div>
+        <button
+          id="annual-save-expense"
+          class="annual-modal-submit"
+        >
+          지출 저장
+        </button>
 
-    </div>
-
-
-    <!-- 거래내역 -->
-    <div class="annual-card">
-
-      <div class="annual-card-header">
-        <div>
-          <h3>지출 내역</h3>
-          <span id="annual-expense-count">
-            0건
-          </span>
-        </div>
-      </div>
-
-      <div id="annual-expense-list" class="annual-expense-list">
       </div>
 
     </div>
@@ -184,166 +626,265 @@
   </div>
 
 
-  <!-- ==========================================
-       TAB 2. 연간 가계부
-       ========================================== -->
-  <div id="annual-yearly" class="annual-tab-content">
+  <!-- ==================================================
+       수입 추가 팝업
+       ================================================== -->
+  <div
+    id="annual-income-modal"
+    class="annual-modal"
+  >
 
-    <!-- 재무 현황 -->
-    <div class="annual-card annual-finance-card">
+    <div class="annual-modal-backdrop"></div>
 
-      <div class="annual-card-header">
+    <div class="annual-modal-box">
+
+      <div class="annual-modal-header">
+
         <div>
-          <h3>2026년 재무 현황</h3>
-          <span>9~12월 시범운영 샘플</span>
+          <h3>수입 추가</h3>
+          <span>월별 수입 내역을 기록합니다.</span>
         </div>
+
+        <button
+          class="annual-modal-close"
+          data-close-modal="annual-income-modal"
+        >
+          ×
+        </button>
+
       </div>
 
-      <div class="annual-finance-grid">
 
-        <div>
-          <span>총 수입</span>
-          <strong id="annual-income-total">
-            0원
-          </strong>
-        </div>
+      <div class="annual-modal-body">
 
-        <div>
-          <span>총 지출</span>
-          <strong id="annual-expense-total">
-            0원
-          </strong>
-        </div>
+        <label>
+          날짜
+          <input
+            type="date"
+            id="income-date"
+            class="annual-input"
+          >
+        </label>
 
-        <div class="balance">
-          <span>현재 잔액</span>
-          <strong id="annual-balance-total">
-            0원
-          </strong>
-        </div>
+
+        <label>
+          내용
+          <input
+            type="text"
+            id="income-title"
+            class="annual-input"
+            placeholder="예: 9월 급여"
+          >
+        </label>
+
+
+        <label>
+          금액
+          <input
+            type="number"
+            id="income-amount"
+            class="annual-input"
+            min="0"
+            placeholder="금액 입력"
+          >
+        </label>
+
+
+        <label>
+          카테고리
+          <select
+            id="income-category"
+            class="annual-input"
+          >
+
+            <option value="allowance">
+              수당
+            </option>
+
+            <option value="salary">
+              월급
+            </option>
+
+            <option value="bonus">
+              보너스
+            </option>
+
+          </select>
+        </label>
+
+      </div>
+
+
+      <div class="annual-modal-footer">
+
+        <button
+          class="annual-modal-cancel"
+          data-close-modal="annual-income-modal"
+        >
+          취소
+        </button>
+
+        <button
+          id="annual-save-income"
+          class="annual-modal-submit income"
+        >
+          수입 저장
+        </button>
 
       </div>
 
     </div>
 
+  </div>
 
-    <!-- 비목별 현황 -->
-    <div class="annual-category-grid">
 
-      <div class="annual-category-card living">
-        <div class="annual-category-top">
-          <span>생활비</span>
-          <strong id="yearly-living-total">0원</strong>
+  <!-- ==================================================
+       목표 설정 팝업
+       ================================================== -->
+  <div
+    id="annual-goal-modal"
+    class="annual-modal"
+  >
+
+    <div class="annual-modal-backdrop"></div>
+
+    <div class="annual-modal-box">
+
+      <div class="annual-modal-header">
+
+        <div>
+          <h3 id="goal-modal-title">
+            목표 설정
+          </h3>
+
+          <span>
+            해당 월의 목표 금액입니다.
+          </span>
         </div>
 
-        <div class="annual-category-goal">
-          연간 목표 19,200,000원
-        </div>
+        <button
+          class="annual-modal-close"
+          data-close-modal="annual-goal-modal"
+        >
+          ×
+        </button>
 
-        <div class="annual-progress">
-          <div id="yearly-living-progress"></div>
-        </div>
-
-        <div class="annual-category-bottom">
-          <span id="yearly-living-percent">0%</span>
-          <span id="yearly-living-remaining">잔여 0원</span>
-        </div>
       </div>
 
 
-      <div class="annual-category-card fixed">
-        <div class="annual-category-top">
-          <span>고정지출</span>
-          <strong id="yearly-fixed-total">0원</strong>
-        </div>
+      <div class="annual-modal-body">
 
-        <div class="annual-category-goal">
-          월별 생활비 집계에서는 제외
-        </div>
+        <label>
+          목표 금액
+          <input
+            type="number"
+            id="goal-amount"
+            class="annual-input"
+            min="0"
+            placeholder="예: 1600000"
+          >
+        </label>
+
       </div>
 
 
-      <div class="annual-category-card irregular">
-        <div class="annual-category-top">
-          <span>경조사</span>
-          <strong id="yearly-event-total">0원</strong>
-        </div>
+      <div class="annual-modal-footer">
 
-        <div class="annual-category-goal">
-          연간 목표 2,400,000원
-        </div>
+        <button
+          class="annual-modal-cancel"
+          data-close-modal="annual-goal-modal"
+        >
+          취소
+        </button>
 
-        <div class="annual-progress">
-          <div id="yearly-event-progress"></div>
-        </div>
+        <button
+          id="annual-save-goal"
+          class="annual-modal-submit"
+        >
+          목표 저장
+        </button>
 
-        <div class="annual-category-bottom">
-          <span id="yearly-event-percent">0%</span>
-          <span id="yearly-event-remaining">잔여 0원</span>
-        </div>
-      </div>
-
-
-      <div class="annual-category-card big-event">
-        <div class="annual-category-top">
-          <span>빅이벤트</span>
-          <strong id="yearly-big-event-total">0원</strong>
-        </div>
-
-        <div class="annual-category-goal">
-          별도 목표 없음
-        </div>
       </div>
 
     </div>
 
+  </div>
 
-    <!-- 생활비 태그 분석 -->
-    <div class="annual-card">
 
-      <div class="annual-card-header">
+  <!-- ==================================================
+       예상치 설정 팝업
+       ================================================== -->
+  <div
+    id="annual-forecast-modal"
+    class="annual-modal"
+  >
+
+    <div class="annual-modal-backdrop"></div>
+
+    <div class="annual-modal-box">
+
+      <div class="annual-modal-header">
+
         <div>
-          <h3>생활비 세부 내역</h3>
-          <span>연간 생활비를 태그별로 확인합니다.</span>
+          <h3>연간 예상치 설정</h3>
+          <span>
+            올해 최종적으로 예상되는 금액을 입력합니다.
+          </span>
         </div>
+
+        <button
+          class="annual-modal-close"
+          data-close-modal="annual-forecast-modal"
+        >
+          ×
+        </button>
+
       </div>
 
-      <div id="annual-living-tags" class="annual-tag-grid">
+
+      <div class="annual-modal-body">
+
+        <label>
+          예상 수입
+          <input
+            type="number"
+            id="forecast-income"
+            class="annual-input"
+            min="0"
+            placeholder="예: 50000000"
+          >
+        </label>
+
+
+        <label>
+          예상 지출
+          <input
+            type="number"
+            id="forecast-expense"
+            class="annual-input"
+            min="0"
+            placeholder="예: 30000000"
+          >
+        </label>
+
       </div>
 
-    </div>
 
+      <div class="annual-modal-footer">
 
-    <!-- 월별 현황 -->
-    <div class="annual-card">
+        <button
+          class="annual-modal-cancel"
+          data-close-modal="annual-forecast-modal"
+        >
+          취소
+        </button>
 
-      <div class="annual-card-header">
-        <div>
-          <h3>월별 지출 현황</h3>
-          <span>비목별 지출을 한눈에 확인합니다.</span>
-        </div>
-      </div>
-
-      <div class="annual-table-wrapper">
-
-        <table class="annual-table">
-
-          <thead>
-            <tr>
-              <th>월</th>
-              <th>수입</th>
-              <th>생활비</th>
-              <th>고정지출</th>
-              <th>경조사</th>
-              <th>빅이벤트</th>
-              <th>전체 지출</th>
-            </tr>
-          </thead>
-
-          <tbody id="annual-monthly-table">
-          </tbody>
-
-        </table>
+        <button
+          id="annual-save-forecast"
+          class="annual-modal-submit"
+        >
+          예상치 저장
+        </button>
 
       </div>
 

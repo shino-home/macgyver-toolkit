@@ -6,70 +6,126 @@
   <title>MacGyver Toolkit</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
   <!-- 좌측 사이드바 -->
   <aside class="sidebar">
-    <div class="brand" id="go-home-btn" title="홈 대시보드로 이동">
+
+    <!-- 브랜드 / 홈 -->
+    <div
+      class="brand"
+      id="go-home-btn"
+      title="홈 대시보드로 이동"
+    >
       <div class="brand-badge">M</div>
+
       <div class="brand-text">
         <span class="brand-title">MacGyver</span>
         <span class="brand-sub">Toolkit</span>
       </div>
     </div>
 
+
+    <!-- 메뉴 -->
     <nav class="nav-menu">
-      <button class="nav-btn calc" data-module="calc">
+
+      <!-- 만능 계산기 -->
+      <button
+        class="nav-btn calc"
+        data-module="calc"
+      >
         <div class="icon-box">🧮</div>
+
         <div class="label-box">
           <span class="main-label">만능 계산기</span>
           <span class="sub-label">Age & D-Day</span>
         </div>
       </button>
 
-      <button class="nav-btn speech" data-module="speech">
+
+      <!-- 스피치 테라피 -->
+      <button
+        class="nav-btn speech"
+        data-module="speech"
+      >
         <div class="icon-box">🗣️</div>
+
         <div class="label-box">
           <span class="main-label">스피치 테라피</span>
           <span class="sub-label">Practice & Timer</span>
         </div>
       </button>
 
-      <button class="nav-btn board" data-module="board">
+
+      <!-- 결혼 & 여행 보드 -->
+      <button
+        class="nav-btn board"
+        data-module="board"
+      >
         <div class="icon-box">💍</div>
+
         <div class="label-box">
           <span class="main-label">결혼 & 여행 보드</span>
           <span class="sub-label">Shared E2EE</span>
         </div>
       </button>
 
-      <button class="nav-btn memo" data-module="memo">
+
+      <!-- 스마트 메모장 -->
+      <button
+        class="nav-btn memo"
+        data-module="memo"
+      >
         <div class="icon-box">📝</div>
+
         <div class="label-box">
           <span class="main-label">스마트 메모장</span>
           <span class="sub-label">Private Storage</span>
         </div>
       </button>
-      <button class="nav-btn annual" data-module="annual">
-  <div class="icon-box">💰</div>
-  <div class="label-box">
-    <span class="main-label">연간 가계부</span>
-    <span class="sub-label">Annual Finance</span>
-  </div>
-</button>
+
+
+      <!-- 연간 가계부 -->
+      <button
+        class="nav-btn annual"
+        data-module="annual"
+      >
+        <div class="icon-box">💰</div>
+
+        <div class="label-box">
+          <span class="main-label">연간 가계부</span>
+          <span class="sub-label">Annual Finance</span>
+        </div>
+      </button>
+
     </nav>
 
+
+    <!-- 사이드바 하단 -->
     <div class="sidebar-footer">
-      <span class="security-status">🔒 E2EE Encrypted</span>
+      <span class="security-status">
+        🔒 E2EE Encrypted
+      </span>
     </div>
+
   </aside>
 
-  <!-- 메인 워크스페이스 (모듈이 동적으로 불러와져 삽입되는 공간) -->
-  <main class="main-content" id="workspace-container">
-    <!-- 기본 로딩 또는 홈 화면 내용이 표시됩니다 -->
+
+  <!-- 메인 워크스페이스 -->
+  <main
+    class="main-content"
+    id="workspace-container"
+  >
+    <!--
+      각 모듈의 HTML이
+      app.js에 의해 이곳에 동적으로 삽입됩니다.
+    -->
   </main>
 
-  <!-- 중앙 통제 메인 라우터 스크립트 -->
+
+  <!-- 중앙 통제 메인 라우터 -->
   <script src="app.js"></script>
+
 </body>
 </html>
