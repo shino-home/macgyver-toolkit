@@ -602,4 +602,607 @@ body.dark-theme .cal-toggle-btn.active { background: #334155; color: #ffffff; }
   .sidebar-footer {
     display: none;
   }
+}/* ==========================================
+   5. 연간 가계부 샘플
+   ========================================== */
+
+.nav-btn.annual {
+  background-color: #e7eef7;
+  border-color: #d0ddea;
+  color: #334155;
+}
+
+
+/* 모듈 전체 */
+
+#annual-section {
+  gap: 16px;
+}
+
+
+/* 헤더 */
+
+.annual-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.annual-header h2 {
+  font-size: clamp(1rem, 1.3vw, 1.25rem);
+  font-weight: 800;
+}
+
+.annual-header p {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+
+/* 상단 탭 */
+
+.annual-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-main);
+  padding: 4px;
+  border-radius: 14px;
+}
+
+.annual-tab-btn {
+  border: none;
+  background: transparent;
+  padding: 7px 16px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.annual-tab-btn.active {
+  background: #ffffff;
+  color: var(--text-dark);
+  box-shadow: var(--shadow-soft);
+}
+
+
+/* 탭 콘텐츠 */
+
+.annual-tab-content {
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.annual-tab-content.active {
+  display: flex;
+}
+
+
+/* 월 선택 */
+
+.annual-month-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--bg-main);
+  border-radius: 16px;
+  padding: 8px;
+}
+
+.annual-current-month {
+  min-width: 130px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.annual-month-arrow {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--text-dark);
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+}
+
+.annual-month-arrow:hover {
+  transform: translateY(-2px);
+}
+
+
+/* 월별 요약 */
+
+.annual-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.annual-summary-card {
+  background: var(--bg-main);
+  border-radius: 18px;
+  padding: 16px;
+  min-height: 112px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+
+.annual-summary-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.annual-summary-card strong {
+  font-size: clamp(1rem, 1.4vw, 1.25rem);
+  font-weight: 900;
+}
+
+.annual-summary-sub {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.annual-summary-card.living {
+  background: var(--sage-bg);
+  color: var(--sage-text);
+}
+
+.annual-summary-card.fixed {
+  background: var(--lavender-bg);
+  color: var(--lavender-text);
+}
+
+.annual-summary-card.irregular {
+  background: var(--sand-bg);
+  color: var(--sand-text);
+}
+
+.annual-summary-card.total {
+  background: var(--butter-bg);
+  color: var(--butter-text);
+}
+
+
+/* 진행률 */
+
+.annual-progress {
+  width: 100%;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 5px;
+}
+
+.annual-progress > div {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0.65;
+  transition: width 0.3s ease;
+}
+
+.annual-progress-text {
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+
+/* 카드 */
+
+.annual-card {
+  background: var(--bg-main);
+  border-radius: 20px;
+  padding: clamp(14px, 1.5vw, 20px);
+  box-shadow: var(--shadow-soft);
+}
+
+.annual-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.annual-card-header h3 {
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.annual-card-header span {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+
+/* 입력 */
+
+.annual-input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr 1fr 1fr auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.annual-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.annual-field label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.annual-input {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid #e2e8f0;
+  border-radius: 11px;
+  background: #ffffff;
+  color: var(--text-dark);
+  font-size: 0.75rem;
+  outline: none;
+}
+
+.annual-input:focus {
+  border-color: var(--sage-border);
+}
+
+.annual-add-btn {
+  padding: 10px 15px;
+  border: 1px solid var(--sage-border);
+  border-radius: 11px;
+  background: var(--sage-bg);
+  color: var(--sage-text);
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.annual-add-btn:hover {
+  transform: translateY(-2px);
+}
+
+
+/* 거래내역 */
+
+.annual-expense-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.annual-expense-item {
+  display: grid;
+  grid-template-columns: 60px 1fr auto 28px;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+.annual-expense-date {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.annual-expense-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.annual-expense-info strong {
+  font-size: 0.78rem;
+}
+
+.annual-expense-info span {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.annual-expense-info em {
+  font-style: normal;
+  font-weight: 800;
+  margin-right: 4px;
+}
+
+.annual-expense-info em.living {
+  color: var(--sage-text);
+}
+
+.annual-expense-info em.fixed {
+  color: var(--lavender-text);
+}
+
+.annual-expense-info em.irregular {
+  color: var(--sand-text);
+}
+
+.annual-expense-amount {
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.annual-delete-btn {
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.annual-delete-btn:hover {
+  color: #ef4444;
+}
+
+.annual-empty {
+  padding: 30px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+
+/* 연간 재무 */
+
+.annual-finance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.annual-finance-grid > div {
+  background: #ffffff;
+  padding: 18px;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.annual-finance-grid span {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.annual-finance-grid strong {
+  font-size: clamp(1rem, 1.5vw, 1.3rem);
+  font-weight: 900;
+}
+
+.annual-finance-grid .balance {
+  background: var(--sage-bg);
+  color: var(--sage-text);
+}
+
+
+/* 비목 카드 */
+
+.annual-category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.annual-category-card {
+  background: var(--bg-main);
+  border-radius: 18px;
+  padding: 16px;
+  min-height: 120px;
+}
+
+.annual-category-card.living {
+  background: var(--sage-bg);
+  color: var(--sage-text);
+}
+
+.annual-category-card.fixed {
+  background: var(--lavender-bg);
+  color: var(--lavender-text);
+}
+
+.annual-category-card.irregular {
+  background: var(--sand-bg);
+  color: var(--sand-text);
+}
+
+.annual-category-card.big-event {
+  background: var(--butter-bg);
+  color: var(--butter-text);
+}
+
+.annual-category-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.annual-category-top span {
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.annual-category-top strong {
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.annual-category-goal {
+  margin-top: 7px;
+  font-size: 0.65rem;
+  opacity: 0.75;
+}
+
+.annual-category-bottom {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+
+/* 생활비 태그 */
+
+.annual-tag-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.annual-tag-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.annual-tag-card span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.annual-tag-card strong {
+  font-size: 0.82rem;
+}
+
+
+/* 월별 테이블 */
+
+.annual-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.annual-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 5px;
+  min-width: 720px;
+}
+
+.annual-table th {
+  padding: 7px 8px;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.annual-table td {
+  padding: 10px 8px;
+  background: #ffffff;
+  font-size: 0.7rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.annual-table td:first-child {
+  text-align: center;
+  border-radius: 10px 0 0 10px;
+  font-weight: 800;
+}
+
+.annual-table td:last-child {
+  border-radius: 0 10px 10px 0;
+  font-weight: 900;
+}
+
+.annual-table .living-text {
+  font-weight: 800;
+}
+
+.annual-table .total-text {
+  font-weight: 900;
+}
+
+
+/* 반응형 */
+
+@media (max-width: 1100px) {
+
+  .annual-summary-grid,
+  .annual-category-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .annual-input-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .annual-add-btn {
+    width: 100%;
+  }
+
+}
+
+
+@media (max-width: 700px) {
+
+  .annual-summary-grid,
+  .annual-category-grid,
+  .annual-finance-grid,
+  .annual-tag-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .annual-input-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .annual-expense-item {
+    grid-template-columns: 48px 1fr auto 24px;
+    gap: 7px;
+  }
+
+}
+
+
+@media (max-width: 500px) {
+
+  .annual-header {
+    align-items: stretch;
+  }
+
+  .annual-tabs {
+    width: 100%;
+  }
+
+  .annual-tab-btn {
+    flex: 1;
+  }
+
+  .annual-input-grid {
+    grid-template-columns: 1fr;
+  }
+
 }

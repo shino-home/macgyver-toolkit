@@ -1,0 +1,354 @@
+<!-- 5. 연간 가계부 샘플 모듈 -->
+
+<section id="annual-section" class="content-section active">
+
+  <!-- 모듈 상단 -->
+  <div class="annual-header">
+    <div>
+      <h2>💰 연간 가계부</h2>
+      <p>2026년 9~12월 시범운영 샘플</p>
+    </div>
+
+    <div class="annual-tabs">
+      <button class="annual-tab-btn active" data-tab="annual-monthly">
+        월별 가계부
+      </button>
+      <button class="annual-tab-btn" data-tab="annual-yearly">
+        연간 가계부
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ==========================================
+       TAB 1. 월별 가계부
+       ========================================== -->
+  <div id="annual-monthly" class="annual-tab-content active">
+
+    <!-- 월 선택 -->
+    <div class="annual-month-selector">
+      <button id="annual-prev-month" class="annual-month-arrow">‹</button>
+
+      <div class="annual-current-month">
+        <span id="annual-month-label">2026년 9월</span>
+      </div>
+
+      <button id="annual-next-month" class="annual-month-arrow">›</button>
+    </div>
+
+
+    <!-- 월별 요약 -->
+    <div class="annual-summary-grid">
+
+      <div class="annual-summary-card living">
+        <span class="annual-summary-label">생활비</span>
+        <strong id="monthly-living-total">0원</strong>
+        <span class="annual-summary-sub">
+          목표 1,600,000원
+        </span>
+
+        <div class="annual-progress">
+          <div id="monthly-living-progress"></div>
+        </div>
+
+        <span id="monthly-living-percent" class="annual-progress-text">
+          0%
+        </span>
+      </div>
+
+      <div class="annual-summary-card fixed">
+        <span class="annual-summary-label">고정지출</span>
+        <strong id="monthly-fixed-total">0원</strong>
+        <span class="annual-summary-sub">
+          생활비 집계 제외
+        </span>
+      </div>
+
+      <div class="annual-summary-card irregular">
+        <span class="annual-summary-label">비정기지출</span>
+        <strong id="monthly-irregular-total">0원</strong>
+        <span class="annual-summary-sub">
+          생활비 집계 제외
+        </span>
+      </div>
+
+      <div class="annual-summary-card total">
+        <span class="annual-summary-label">월 생활비 사용액</span>
+        <strong id="monthly-expense-total">0원</strong>
+        <span class="annual-summary-sub">
+          생활비 기준
+        </span>
+      </div>
+
+    </div>
+
+
+    <!-- 지출 입력 -->
+    <div class="annual-card">
+
+      <div class="annual-card-header">
+        <div>
+          <h3>지출 내역 추가</h3>
+          <span>사용한 금액을 하나씩 기록해보세요.</span>
+        </div>
+      </div>
+
+      <div class="annual-input-grid">
+
+        <div class="annual-field">
+          <label>날짜</label>
+          <input
+            type="date"
+            id="annual-expense-date"
+            class="annual-input"
+          >
+        </div>
+
+        <div class="annual-field">
+          <label>내용</label>
+          <input
+            type="text"
+            id="annual-expense-title"
+            class="annual-input"
+            placeholder="예: 점심 식사"
+          >
+        </div>
+
+        <div class="annual-field">
+          <label>금액</label>
+          <input
+            type="number"
+            id="annual-expense-amount"
+            class="annual-input"
+            placeholder="금액"
+            min="0"
+          >
+        </div>
+
+        <div class="annual-field">
+          <label>예산 비목</label>
+
+          <select id="annual-expense-category" class="annual-input">
+
+            <option value="living">
+              생활비
+            </option>
+
+            <option value="fixed">
+              고정지출
+            </option>
+
+            <option value="irregular">
+              비정기지출
+            </option>
+
+          </select>
+        </div>
+
+        <div class="annual-field">
+          <label>세부 태그</label>
+
+          <select id="annual-expense-tag" class="annual-input">
+            <option value="식비">식비</option>
+            <option value="간식비">간식비</option>
+            <option value="쇼핑">쇼핑</option>
+          </select>
+        </div>
+
+        <button id="annual-add-expense" class="annual-add-btn">
+          + 지출 추가
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- 거래내역 -->
+    <div class="annual-card">
+
+      <div class="annual-card-header">
+        <div>
+          <h3>지출 내역</h3>
+          <span id="annual-expense-count">
+            0건
+          </span>
+        </div>
+      </div>
+
+      <div id="annual-expense-list" class="annual-expense-list">
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ==========================================
+       TAB 2. 연간 가계부
+       ========================================== -->
+  <div id="annual-yearly" class="annual-tab-content">
+
+    <!-- 재무 현황 -->
+    <div class="annual-card annual-finance-card">
+
+      <div class="annual-card-header">
+        <div>
+          <h3>2026년 재무 현황</h3>
+          <span>9~12월 시범운영 샘플</span>
+        </div>
+      </div>
+
+      <div class="annual-finance-grid">
+
+        <div>
+          <span>총 수입</span>
+          <strong id="annual-income-total">
+            0원
+          </strong>
+        </div>
+
+        <div>
+          <span>총 지출</span>
+          <strong id="annual-expense-total">
+            0원
+          </strong>
+        </div>
+
+        <div class="balance">
+          <span>현재 잔액</span>
+          <strong id="annual-balance-total">
+            0원
+          </strong>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- 비목별 현황 -->
+    <div class="annual-category-grid">
+
+      <div class="annual-category-card living">
+        <div class="annual-category-top">
+          <span>생활비</span>
+          <strong id="yearly-living-total">0원</strong>
+        </div>
+
+        <div class="annual-category-goal">
+          연간 목표 19,200,000원
+        </div>
+
+        <div class="annual-progress">
+          <div id="yearly-living-progress"></div>
+        </div>
+
+        <div class="annual-category-bottom">
+          <span id="yearly-living-percent">0%</span>
+          <span id="yearly-living-remaining">잔여 0원</span>
+        </div>
+      </div>
+
+
+      <div class="annual-category-card fixed">
+        <div class="annual-category-top">
+          <span>고정지출</span>
+          <strong id="yearly-fixed-total">0원</strong>
+        </div>
+
+        <div class="annual-category-goal">
+          월별 생활비 집계에서는 제외
+        </div>
+      </div>
+
+
+      <div class="annual-category-card irregular">
+        <div class="annual-category-top">
+          <span>경조사</span>
+          <strong id="yearly-event-total">0원</strong>
+        </div>
+
+        <div class="annual-category-goal">
+          연간 목표 2,400,000원
+        </div>
+
+        <div class="annual-progress">
+          <div id="yearly-event-progress"></div>
+        </div>
+
+        <div class="annual-category-bottom">
+          <span id="yearly-event-percent">0%</span>
+          <span id="yearly-event-remaining">잔여 0원</span>
+        </div>
+      </div>
+
+
+      <div class="annual-category-card big-event">
+        <div class="annual-category-top">
+          <span>빅이벤트</span>
+          <strong id="yearly-big-event-total">0원</strong>
+        </div>
+
+        <div class="annual-category-goal">
+          별도 목표 없음
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- 생활비 태그 분석 -->
+    <div class="annual-card">
+
+      <div class="annual-card-header">
+        <div>
+          <h3>생활비 세부 내역</h3>
+          <span>연간 생활비를 태그별로 확인합니다.</span>
+        </div>
+      </div>
+
+      <div id="annual-living-tags" class="annual-tag-grid">
+      </div>
+
+    </div>
+
+
+    <!-- 월별 현황 -->
+    <div class="annual-card">
+
+      <div class="annual-card-header">
+        <div>
+          <h3>월별 지출 현황</h3>
+          <span>비목별 지출을 한눈에 확인합니다.</span>
+        </div>
+      </div>
+
+      <div class="annual-table-wrapper">
+
+        <table class="annual-table">
+
+          <thead>
+            <tr>
+              <th>월</th>
+              <th>수입</th>
+              <th>생활비</th>
+              <th>고정지출</th>
+              <th>경조사</th>
+              <th>빅이벤트</th>
+              <th>전체 지출</th>
+            </tr>
+          </thead>
+
+          <tbody id="annual-monthly-table">
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
