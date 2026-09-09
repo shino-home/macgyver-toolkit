@@ -2055,3 +2055,1197 @@ button.annual-summary-card {
   }
 
 }
+/* =========================================================
+   연간 가계부 - 실사용 UI
+   ========================================================= */
+
+.annual-section {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: clamp(10px, 1.5vw, 24px);
+  color: var(--text-dark);
+}
+
+.annual-section::-webkit-scrollbar {
+  width: 7px;
+}
+
+.annual-section::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+}
+
+
+/* ---------- 헤더 ---------- */
+
+.annual-header {
+  margin-bottom: 18px;
+}
+
+.annual-title-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.annual-header h1 {
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+
+.annual-subtitle {
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.annual-view-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 13px;
+  background: rgba(15, 23, 42, 0.05);
+}
+
+.annual-view-tab {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  padding: 7px 15px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.annual-view-tab.active {
+  background: var(--card-glass-bg);
+  color: var(--text-dark);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08);
+}
+
+
+/* ---------- 기간 ---------- */
+
+.annual-period-bar,
+.yearly-period-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.period-selector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.period-selector select {
+  border: 1px solid var(--stripe-border);
+  background: var(--card-glass-bg);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  outline: none;
+  cursor: pointer;
+}
+
+.period-arrow {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--stripe-border);
+  border-radius: 12px;
+  background: var(--card-glass-bg);
+  color: var(--text-primary);
+  font-size: 1.35rem;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.period-arrow:hover {
+  transform: translateY(-2px);
+}
+
+.yearly-year {
+  min-width: 100px;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+
+/* ---------- 요약 카드 ---------- */
+
+.annual-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.finance-summary-card {
+  min-width: 0;
+  padding: 17px;
+  border-radius: 20px;
+  border: 1px solid var(--stripe-border);
+  background: var(--card-glass-bg);
+  box-shadow: var(--stripe-shadow);
+}
+
+.finance-summary-card.living-card {
+  background: linear-gradient(
+    135deg,
+    rgba(220, 252, 231, 0.8),
+    rgba(255, 255, 255, 0.82)
+  );
+}
+
+.finance-summary-card.fixed-card {
+  background: linear-gradient(
+    135deg,
+    rgba(254, 249, 195, 0.75),
+    rgba(255, 255, 255, 0.82)
+  );
+}
+
+.finance-summary-card.irregular-card {
+  background: linear-gradient(
+    135deg,
+    rgba(237, 233, 254, 0.78),
+    rgba(255, 255, 255, 0.82)
+  );
+}
+
+.finance-summary-card.asset-card {
+  background: linear-gradient(
+    135deg,
+    rgba(219, 234, 254, 0.75),
+    rgba(255, 255, 255, 0.82)
+  );
+}
+
+.asset-card-clickable {
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.asset-card-clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1);
+}
+
+.summary-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.summary-card-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.info-circle {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
+  font-size: 0.67rem;
+  font-weight: 900;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.info-circle:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.goal-edit-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.goal-edit-btn:hover {
+  color: var(--text-primary);
+}
+
+.asset-card-hint {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.summary-amount {
+  margin-top: 15px;
+  font-size: clamp(1.15rem, 2vw, 1.55rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.summary-goal {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.summary-goal strong {
+  color: var(--text-primary);
+}
+
+
+/* ---------- 목록 ---------- */
+
+.finance-list-section {
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid var(--stripe-border);
+  background: var(--panel-glass);
+  box-shadow: var(--stripe-shadow);
+}
+
+.section-heading-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 14px;
+}
+
+.section-title {
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.section-title.small {
+  font-size: 0.82rem;
+}
+
+.section-description {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.section-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-control {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.sort-control select {
+  border: 1px solid var(--stripe-border);
+  border-radius: 9px;
+  padding: 6px 8px;
+  background: var(--card-glass-bg);
+  color: var(--text-primary);
+  font-size: 0.7rem;
+  font-weight: 800;
+  outline: none;
+}
+
+.finance-primary-btn,
+.finance-secondary-btn {
+  border: 1px solid var(--stripe-border);
+  border-radius: 11px;
+  padding: 8px 12px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.finance-primary-btn:hover,
+.finance-secondary-btn:hover {
+  transform: translateY(-1px);
+}
+
+.finance-primary-btn {
+  border-color: var(--sage-border);
+  background: var(--sage-bg);
+  color: var(--sage-text);
+}
+
+.finance-secondary-btn {
+  background: var(--card-glass-bg);
+  color: var(--text-primary);
+}
+
+.finance-record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.finance-record {
+  display: grid;
+  grid-template-columns: 55px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 13px;
+  border: 1px solid rgba(226, 232, 240, 0.7);
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.living-record {
+  border-left: 3px solid #86efac;
+}
+
+.record-date {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.record-main {
+  min-width: 0;
+}
+
+.record-description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.record-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.category-badge,
+.tag-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 7px;
+  border-radius: 7px;
+  font-size: 0.61rem;
+  font-weight: 800;
+}
+
+.category-badge {
+  background: rgba(148, 163, 184, 0.1);
+  color: var(--text-muted);
+}
+
+.category-living {
+  background: rgba(134, 239, 172, 0.18);
+}
+
+.category-fixed {
+  background: rgba(253, 224, 71, 0.18);
+}
+
+.category-irregular {
+  background: rgba(196, 181, 253, 0.2);
+}
+
+.tag-badge {
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text-muted);
+}
+
+.record-amount {
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.record-actions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.record-edit-btn,
+.record-delete-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 5px;
+  font-size: 0.61rem;
+  font-weight: 800;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.record-edit-btn {
+  color: var(--text-muted);
+}
+
+.record-delete-btn {
+  color: #ef4444;
+}
+
+.record-edit-btn:hover,
+.record-delete-btn:hover {
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.empty-record {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 35px 15px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.empty-record-icon {
+  margin-bottom: 7px;
+  font-size: 1.7rem;
+}
+
+.empty-record strong {
+  color: var(--text-primary);
+  font-size: 0.78rem;
+}
+
+.empty-record span {
+  margin-top: 4px;
+  font-size: 0.68rem;
+}
+
+
+/* ---------- 수입 ---------- */
+
+.income-mini-section {
+  margin-top: 12px;
+  padding: 13px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--stripe-border);
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.income-mini-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.income-mini-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.income-mini-section .finance-secondary-btn {
+  padding: 7px 10px;
+  font-size: 0.67rem;
+}
+
+
+/* ---------- 모달 ---------- */
+
+.annual-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.annual-modal.hidden {
+  display: none !important;
+}
+
+.annual-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(4px);
+}
+
+.annual-modal-box {
+  position: relative;
+  z-index: 2;
+  width: min(440px, calc(100vw - 30px));
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding: 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: var(--card-glass-bg);
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.2);
+}
+
+.large-modal-box {
+  width: min(650px, calc(100vw - 30px));
+}
+
+.info-modal-box {
+  width: min(500px, calc(100vw - 30px));
+}
+
+.annual-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.annual-modal-header h3 {
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.modal-sub-description {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.annual-modal-close {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--text-muted);
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.annual-form-group {
+  margin-bottom: 13px;
+}
+
+.annual-form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.annual-form-group input,
+.annual-form-group select {
+  width: 100%;
+  padding: 10px 11px;
+  border: 1px solid var(--stripe-border);
+  border-radius: 11px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.annual-form-group input:focus,
+.annual-form-group select:focus {
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+}
+
+.modal-submit-btn {
+  width: 100%;
+  margin-top: 5px;
+  padding: 11px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent-indigo);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.form-tag-hint,
+.form-help-text {
+  margin: -3px 0 13px;
+  color: var(--text-muted);
+  font-size: 0.66rem;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+
+/* ---------- 정보 ---------- */
+
+.info-modal-content {
+  color: var(--text-primary);
+  font-size: 0.76rem;
+  line-height: 1.65;
+}
+
+.info-modal-content > p {
+  margin-bottom: 12px;
+}
+
+.info-example-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.info-example-list div {
+  padding: 9px;
+  border-radius: 10px;
+  background: rgba(148, 163, 184, 0.08);
+  font-weight: 800;
+}
+
+.info-note {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.info-sub-box {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(148, 163, 184, 0.07);
+}
+
+.info-sub-box strong {
+  font-size: 0.76rem;
+}
+
+.info-sub-box p {
+  margin-top: 5px;
+}
+
+.info-sub-box small {
+  color: var(--text-muted);
+}
+
+
+/* ---------- 연간 ---------- */
+
+.yearly-main-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.yearly-total-card {
+  padding: 18px;
+  border-radius: 19px;
+  border: 1px solid var(--stripe-border);
+  background: var(--card-glass-bg);
+  box-shadow: var(--stripe-shadow);
+}
+
+.yearly-total-label {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.yearly-total-card strong {
+  display: block;
+  margin-top: 10px;
+  font-size: clamp(1.25rem, 2.4vw, 1.8rem);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+
+.income-total-card {
+  background: rgba(220, 252, 231, 0.55);
+}
+
+.expense-total-card {
+  background: rgba(254, 226, 226, 0.48);
+}
+
+.balance-total-card {
+  background: rgba(219, 234, 254, 0.55);
+}
+
+.yearly-forecast-card {
+  margin-bottom: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--stripe-border);
+  background: var(--card-glass-bg);
+}
+
+.yearly-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.yearly-card-header h2 {
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+.yearly-card-header p {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 0.66rem;
+}
+
+.small-outline-btn {
+  border: 1px solid var(--stripe-border);
+  border-radius: 9px;
+  padding: 6px 9px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.66rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 9px;
+  margin-top: 13px;
+}
+
+.forecast-item {
+  padding: 11px;
+  border-radius: 11px;
+  background: rgba(148, 163, 184, 0.07);
+}
+
+.forecast-item span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.forecast-item strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.88rem;
+  font-weight: 900;
+}
+
+.yearly-category-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.yearly-category-card {
+  padding: 13px;
+  border-radius: 15px;
+  border: 1px solid var(--stripe-border);
+  background: var(--card-glass-bg);
+}
+
+.yearly-category-card span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+
+.yearly-category-card strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.asset-yearly-card {
+  background: rgba(219, 234, 254, 0.42);
+}
+
+
+/* ---------- 통계 ---------- */
+
+.statistics-section {
+  margin-top: 8px;
+  border-radius: 16px;
+  border: 1px solid var(--stripe-border);
+  background: var(--card-glass-bg);
+  overflow: hidden;
+}
+
+.statistics-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 15px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.74rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.statistics-content {
+  padding: 0 15px 14px;
+}
+
+.stat-row {
+  position: relative;
+  padding: 8px 0;
+}
+
+.stat-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.67rem;
+  font-weight: 700;
+}
+
+.stat-label strong {
+  font-size: 0.7rem;
+}
+
+.stat-bar {
+  height: 5px;
+  margin-top: 5px;
+  border-radius: 5px;
+  background: rgba(148, 163, 184, 0.1);
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  background: var(--accent-indigo);
+}
+
+.stat-percent {
+  position: absolute;
+  right: 0;
+  top: 8px;
+  color: var(--text-muted);
+  font-size: 0.58rem;
+  font-weight: 800;
+  transform: translateY(-1px);
+}
+
+.statistics-empty {
+  padding: 15px 0;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  text-align: center;
+}
+
+.monthly-stat-row {
+  display: grid;
+  grid-template-columns: 50px repeat(3, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.monthly-stat-row:last-child {
+  border-bottom: none;
+}
+
+.monthly-stat-month {
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.monthly-stat-row div:not(.monthly-stat-month) {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.monthly-stat-row span {
+  color: var(--text-muted);
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+
+.monthly-stat-row strong {
+  font-size: 0.66rem;
+  font-weight: 900;
+}
+
+
+/* ---------- 수입 내역 ---------- */
+
+.modal-list-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.income-history-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 11px 12px;
+  border-radius: 11px;
+  background: rgba(220, 252, 231, 0.5);
+}
+
+.income-history-total span {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.income-history-total strong {
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+.income-record {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.income-category-badge {
+  background: rgba(219, 234, 254, 0.5);
+}
+
+
+/* ---------- 삭제 확인 ---------- */
+
+.delete-confirm-box {
+  width: min(360px, calc(100vw - 30px));
+  text-align: center;
+}
+
+.delete-confirm-icon {
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(248, 113, 113, 0.12);
+  color: #ef4444;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.delete-confirm-box h3 {
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.delete-confirm-box p {
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+}
+
+.delete-confirm-actions {
+  display: flex;
+  gap: 7px;
+  margin-top: 18px;
+}
+
+.delete-confirm-actions button {
+  flex: 1;
+}
+
+.delete-confirm-btn {
+  border: none;
+  border-radius: 11px;
+  padding: 9px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+
+/* ---------- 공통 ---------- */
+
+.hidden {
+  display: none !important;
+}
+
+
+/* ---------- 다크모드 ---------- */
+
+body.dark-theme .finance-summary-card.living-card,
+body.dark-theme .finance-summary-card.fixed-card,
+body.dark-theme .finance-summary-card.irregular-card,
+body.dark-theme .finance-summary-card.asset-card {
+  background: var(--card-glass-bg);
+}
+
+body.dark-theme .finance-record,
+body.dark-theme .annual-form-group input,
+body.dark-theme .annual-form-group select {
+  background: rgba(30, 41, 59, 0.7);
+  border-color: var(--stripe-border);
+}
+
+body.dark-theme .annual-modal-box {
+  border-color: var(--stripe-border);
+}
+
+
+/* ---------- 반응형 ---------- */
+
+@media (max-width: 1050px) {
+
+  .annual-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .yearly-category-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+}
+
+
+@media (max-width: 760px) {
+
+  .annual-section {
+    padding: 10px;
+  }
+
+  .annual-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .section-heading-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .section-actions {
+    justify-content: space-between;
+  }
+
+  .finance-record {
+    grid-template-columns: 45px minmax(0, 1fr) auto;
+  }
+
+  .record-actions {
+    grid-column: 2 / -1;
+    justify-content: flex-end;
+    margin-top: -3px;
+  }
+
+  .record-amount {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .yearly-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .yearly-category-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .income-mini-title {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .income-mini-actions {
+    justify-content: flex-end;
+  }
+
+}
+
+
+@media (max-width: 520px) {
+
+  .annual-summary-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+  }
+
+  .finance-summary-card {
+    padding: 13px;
+    border-radius: 16px;
+  }
+
+  .summary-amount {
+    font-size: 1.05rem;
+  }
+
+  .period-selector select {
+    padding: 7px 8px;
+  }
+
+  .finance-list-section {
+    padding: 13px;
+  }
+
+  .finance-record {
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .record-description {
+    font-size: 0.74rem;
+  }
+
+  .record-amount {
+    font-size: 0.74rem;
+  }
+
+  .yearly-category-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .forecast-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-example-list {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .monthly-stat-row {
+    grid-template-columns: 40px repeat(3, 1fr);
+  }
+
+}

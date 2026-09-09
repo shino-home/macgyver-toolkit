@@ -1,1115 +1,1262 @@
-// 가계부 모듈
 (() => {
+  const STORAGE_KEY = 'macgyver_household_account_v2';
 
-  /* ==========================================
-     기본 설정
-     ========================================== */
+  const today = new Date();
 
-  const STORAGE_KEY = "macgyver_household_account_v2";
+  let currentYear = today.getFullYear();
+  let currentMonth = today.getMonth() + 1;
 
-  const CURRENT_DATE = new Date();
+  let currentView = 'monthly';
 
-  let currentYear = CURRENT_DATE.getFullYear();
-  let currentMonth = CURRENT_DATE.getMonth() + 1;
-
-  let selectedGoalCategory = null;
-
-
-  /* ==========================================
-     데이터
-     ========================================== */
+  let pendingDelete = null;
 
   let data = loadData();
 
+  const TAGS = {
+    living: [
+      { value: 'food', label: '식비' },
+      { value: 'snack', label: '간식비' },
+      { value: 'shopping', label: '쇼핑' },
+      { value: 'etc', label: '기타' }
+    ],
 
-  function createDefaultData() {
+    fixed: [
+      { value: 'insurance', label: '보험' },
+      { value: 'communication', label: '통신' },
+      { value: 'subscription', label: '구독' },
+      { value: 'fuel', label: '주유비' },
+      { value: 'etc', label: '기타' }
+    ],
 
+    irregular: [
+      { value: 'prepared', label: '준비지출' },
+      { value: 'special', label: '특별소비' }
+    ]
+  };
+
+
+  const TAG_HINTS = {
+    living: {
+      food: '식사, 장보기 등 음식과 관련된 생활비입니다.',
+      snack: '커피, 디저트, 간식 등입니다.',
+      shopping: '평소 생활에 필요한 물건이나 쇼핑입니다.',
+      etc: '로또 결제 등 위 항목에 넣기 애매한 생활비입니다.'
+    },
+
+    fixed: {
+      insurance: '매월 또는 정기적으로 납부하는 보험료입니다.',
+      communication: '휴대전화, 인터넷 등 통신비입니다.',
+      subscription: '정기 구독 서비스 비용입니다.',
+      fuel: '평소 차량 운행에 필요한 주유비입니다.',
+      etc: '기타 반복적인 고정지출입니다.'
+    },
+
+    irregular: {
+      prepared: '축의금·조의금·부모님 용돈·명절 용돈·예상 가능한 차량 유지비 등 매년 어느 정도 준비하는 지출입니다.',
+      special: '선물·여행·대형 차량수리 등 평소 생활비와 별도로 발생하는 큰 지출입니다.'
+    }
+  };
+
+
+  /* =========================================================
+     초기화
+     ========================================================= */
+
+  function init() {
+    populateYearSelect();
+    bindEvents();
+    renderAll();
+  }
+
+
+  /* =========================================================
+     데이터
+     ========================================================= */
+
+  function defaultData() {
     return {
       expenses: [],
       incomes: [],
-      goals: {},
+
+      goals: {
+        living: [
+          {
+            from: '2000-01',
+            amount: 1600000
+          }
+        ],
+
+        fixed: [
+          {
+            from: '2000-01',
+            amount: 0
+          }
+        ],
+
+        prepared: [
+          {
+            from: '2000-01',
+            amount: 2400000
+          }
+        ]
+      },
+
+      assets: [
+        {
+          from: '2000-01',
+          amount: 0
+        }
+      ],
+
       forecasts: {}
     };
-
   }
 
 
   function loadData() {
-
     try {
-
-      const saved =
-        localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY);
 
       if (!saved) {
-        return createDefaultData();
+        return defaultData();
       }
 
       const parsed = JSON.parse(saved);
 
-      return {
-        expenses: Array.isArray(parsed.expenses)
-          ? parsed.expenses
-          : [],
+      const result = defaultData();
 
-        incomes: Array.isArray(parsed.incomes)
-          ? parsed.incomes
-          : [],
+      if (Array.isArray(parsed.expenses)) {
+        result.expenses = parsed.expenses;
+      }
 
-        goals: parsed.goals || {},
+      if (Array.isArray(parsed.incomes)) {
+        result.incomes = parsed.incomes;
+      }
 
-        forecasts: parsed.forecasts || {}
-      };
+      if (parsed.goals) {
+        result.goals = {
+          ...result.goals,
+          ...parsed.goals
+        };
+      }
+
+      if (Array.isArray(parsed.assets)) {
+        result.assets = parsed.assets;
+      }
+
+      if (parsed.forecasts) {
+        result.forecasts = parsed.forecasts;
+      }
+
+      /*
+       * 이전 버전에서 goals가 단순 객체 형태였던 경우도
+       * 최대한 이어받는다.
+       */
+      ['living', 'fixed', 'prepared'].forEach(type => {
+        if (!Array.isArray(result.goals[type])) {
+          const oldValue = result.goals[type];
+
+          result.goals[type] = [
+            {
+              from: '2000-01',
+              amount: Number(oldValue) || 0
+            }
+          ];
+        }
+      });
+
+      if (!Array.isArray(result.assets)) {
+        result.assets = [
+          {
+            from: '2000-01',
+            amount: 0
+          }
+        ];
+      }
+
+      return result;
 
     } catch (error) {
-
-      console.error(
-        "가계부 데이터를 불러오는 중 오류:",
-        error
-      );
-
-      return createDefaultData();
-
+      console.error('가계부 데이터를 불러오지 못했습니다.', error);
+      return defaultData();
     }
-
   }
 
 
   function saveData() {
-
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify(data)
     );
-
   }
 
 
-  /* ==========================================
-     공통 함수
-     ========================================== */
+  /* =========================================================
+     날짜 / 금액
+     ========================================================= */
 
-  function formatWon(value) {
-
-    return `${Number(value || 0).toLocaleString("ko-KR")}원`;
-
+  function pad2(value) {
+    return String(value).padStart(2, '0');
   }
 
 
   function monthKey(year, month) {
-
-    return `${year}-${String(month).padStart(2, "0")}`;
-
+    return `${year}-${pad2(month)}`;
   }
 
 
-  function escapeHTML(value) {
-
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-
+  function dateKey(dateString) {
+    return dateString.slice(0, 7);
   }
 
 
-  function categoryName(category) {
-
-    const names = {
-
-      living: "생활비",
-      fixed: "고정지출",
-      irregular: "비정기지출",
-
-      allowance: "수당",
-      salary: "월급",
-      bonus: "보너스"
-
-    };
-
-    return names[category] || category;
-
+  function todayString() {
+    return `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`;
   }
 
 
-  function categoryClass(category) {
+  function formatNumber(value) {
+    return Number(value || 0).toLocaleString('ko-KR');
+  }
 
-    if (category === "living") {
-      return "living";
+
+  function formatWon(value) {
+    return `${formatNumber(value)}원`;
+  }
+
+
+  function parseMoney(value) {
+    if (typeof value === 'number') {
+      return value;
     }
 
-    if (category === "fixed") {
-      return "fixed";
-    }
-
-    if (category === "irregular") {
-      return "irregular";
-    }
-
-    return "";
-
+    return Number(
+      String(value || '')
+        .replace(/,/g, '')
+        .replace(/[^\d]/g, '')
+    ) || 0;
   }
 
 
-  /* ==========================================
-     현재 월 데이터
-     ========================================== */
-
-  function getCurrentExpenses() {
-
-    const key =
-      monthKey(currentYear, currentMonth);
-
-    return data.expenses.filter(
-      item => item.date.startsWith(key)
-    );
-
-  }
-
-
-  function getCurrentIncomes() {
-
-    const key =
-      monthKey(currentYear, currentMonth);
-
-    return data.incomes.filter(
-      item => item.date.startsWith(key)
-    );
-
-  }
-
-
-  /* ==========================================
-     팝업
-     ========================================== */
-
-  function openModal(id) {
-
-    document
-      .getElementById(id)
-      ?.classList.add("open");
-
-  }
-
-
-  function closeModal(id) {
-
-    document
-      .getElementById(id)
-      ?.classList.remove("open");
-
-  }
-
-
-  document
-    .querySelectorAll("[data-close-modal]")
-    .forEach(button => {
-
-      button.addEventListener("click", () => {
-
-        closeModal(
-          button.getAttribute("data-close-modal")
-        );
-
-      });
-
-    });
-
-
-  document
-    .querySelectorAll(".annual-modal-backdrop")
-    .forEach(backdrop => {
-
-      backdrop.addEventListener("click", () => {
-
-        backdrop
-          .closest(".annual-modal")
-          ?.classList.remove("open");
-
-      });
-
-    });
-
-
-  /* ==========================================
-     화면 탭
-     ========================================== */
-
-  const viewTabs =
-    document.querySelectorAll(".annual-view-tab");
-
-  const views =
-    document.querySelectorAll(".annual-view");
-
-
-  viewTabs.forEach(button => {
-
-    button.addEventListener("click", () => {
-
-      const target =
-        button.getAttribute("data-view");
-
-      viewTabs.forEach(tab =>
-        tab.classList.remove("active")
-      );
-
-      views.forEach(view =>
-        view.classList.remove("active")
-      );
-
-      button.classList.add("active");
-
-      document
-        .getElementById(`annual-${target}-view`)
-        ?.classList.add("active");
-
-
-      if (target === "yearly") {
-
-        renderYearly();
-
-      } else {
-
-        renderMonthly();
-
-      }
-
-    });
-
-  });
-
-
-  /* ==========================================
-     월 이동
-     ========================================== */
-
-  document
-    .getElementById("annual-prev-month")
-    ?.addEventListener("click", () => {
-
-      currentMonth--;
-
-      if (currentMonth < 1) {
-
-        currentMonth = 12;
-        currentYear--;
-
-      }
-
-      renderMonthly();
-
-    });
-
-
-  document
-    .getElementById("annual-next-month")
-    ?.addEventListener("click", () => {
-
-      currentMonth++;
-
-      if (currentMonth > 12) {
-
-        currentMonth = 1;
-        currentYear++;
-
-      }
-
-      renderMonthly();
-
-    });
-
-
-  /* ==========================================
-     연도 이동
-     ========================================== */
-
-  document
-    .getElementById("annual-prev-year")
-    ?.addEventListener("click", () => {
-
-      currentYear--;
-
-      renderYearly();
-
-    });
-
-
-  document
-    .getElementById("annual-next-year")
-    ?.addEventListener("click", () => {
-
-      currentYear++;
-
-      renderYearly();
-
-    });
-
-
-  /* ==========================================
-     날짜 입력 기본값
-     ========================================== */
-
-  function setDefaultDate(inputId) {
-
-    const input =
-      document.getElementById(inputId);
-
+  function bindMoneyInput(input) {
     if (!input) return;
 
-    const today =
-      new Date();
+    input.addEventListener('input', () => {
+      const number = parseMoney(input.value);
 
-    let year =
-      currentYear;
+      input.value = number
+        ? formatNumber(number)
+        : '';
+    });
 
-    let month =
-      currentMonth;
-
-    let day =
-      today.getDate();
-
-    if (
-      today.getFullYear() !== currentYear ||
-      today.getMonth() + 1 !== currentMonth
-    ) {
-
-      day = 1;
-
-    }
-
-    const maxDay =
-      new Date(
-        year,
-        month,
-        0
-      ).getDate();
-
-    day =
-      Math.min(day, maxDay);
-
-    input.value =
-      `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-
+    input.addEventListener('focus', () => {
+      input.select();
+    });
   }
 
 
-  /* ==========================================
-     지출 팝업
-     ========================================== */
+  /* =========================================================
+     연도 선택
+     ========================================================= */
 
-  document
-    .getElementById("annual-open-expense")
-    ?.addEventListener("click", () => {
+  function populateYearSelect() {
+    const select = document.getElementById('year-select');
 
-      setDefaultDate("expense-date");
+    if (!select) return;
 
-      document.getElementById(
-        "expense-title"
-      ).value = "";
+    const startYear = Math.min(
+      2020,
+      currentYear - 3
+    );
 
-      document.getElementById(
-        "expense-amount"
-      ).value = "";
+    const endYear = Math.max(
+      currentYear + 5,
+      currentYear + 1
+    );
 
-      document.getElementById(
-        "expense-category"
-      ).value = "living";
+    select.innerHTML = '';
 
-      updateExpenseTags();
+    for (let year = startYear; year <= endYear; year++) {
+      const option = document.createElement('option');
 
-      openModal("annual-expense-modal");
+      option.value = year;
+      option.textContent = `${year}년`;
 
+      select.appendChild(option);
+    }
+
+    select.value = String(currentYear);
+    document.getElementById('month-select').value =
+      String(currentMonth);
+  }
+
+
+  /* =========================================================
+     목표값
+     ========================================================= */
+
+  function getEffectiveSetting(history, key) {
+    if (!Array.isArray(history) || history.length === 0) {
+      return 0;
+    }
+
+    const sorted = [...history].sort(
+      (a, b) => a.from.localeCompare(b.from)
+    );
+
+    let result = sorted[0].amount || 0;
+
+    for (const item of sorted) {
+      if (item.from <= key) {
+        result = Number(item.amount) || 0;
+      }
+    }
+
+    return result;
+  }
+
+
+  function setFutureSetting(type, amount, key) {
+    if (!Array.isArray(data.goals[type])) {
+      data.goals[type] = [];
+    }
+
+    /*
+     * 같은 시작월의 설정이 있다면 덮어쓰기.
+     */
+    const existingIndex = data.goals[type].findIndex(
+      item => item.from === key
+    );
+
+    if (existingIndex >= 0) {
+      data.goals[type][existingIndex].amount = amount;
+    } else {
+      data.goals[type].push({
+        from: key,
+        amount
+      });
+    }
+
+    data.goals[type].sort(
+      (a, b) => a.from.localeCompare(b.from)
+    );
+  }
+
+
+  function getGoal(type, year = currentYear, month = currentMonth) {
+    return getEffectiveSetting(
+      data.goals[type],
+      monthKey(year, month)
+    );
+  }
+
+
+  function getAssetAmount(year = currentYear, month = currentMonth) {
+    return getEffectiveSetting(
+      data.assets,
+      monthKey(year, month)
+    );
+  }
+
+
+  function setAssetAmount(amount) {
+    const key = monthKey(currentYear, currentMonth);
+
+    const existingIndex = data.assets.findIndex(
+      item => item.from === key
+    );
+
+    if (existingIndex >= 0) {
+      data.assets[existingIndex].amount = amount;
+    } else {
+      data.assets.push({
+        from: key,
+        amount
+      });
+    }
+
+    data.assets.sort(
+      (a, b) => a.from.localeCompare(b.from)
+    );
+  }
+
+
+  /* =========================================================
+     월별 계산
+     ========================================================= */
+
+  function getMonthlyExpenses(year, month) {
+    const key = monthKey(year, month);
+
+    return data.expenses.filter(
+      expense => dateKey(expense.date) === key
+    );
+  }
+
+
+  function getMonthlyIncomes(year, month) {
+    const key = monthKey(year, month);
+
+    return data.incomes.filter(
+      income => dateKey(income.date) === key
+    );
+  }
+
+
+  function sumByCategory(expenses, category) {
+    return expenses
+      .filter(item => item.category === category)
+      .reduce(
+        (sum, item) => sum + Number(item.amount || 0),
+        0
+      );
+  }
+
+
+  function getMonthlySummary() {
+    const expenses = getMonthlyExpenses(
+      currentYear,
+      currentMonth
+    );
+
+    const living = sumByCategory(expenses, 'living');
+    const fixed = sumByCategory(expenses, 'fixed');
+    const irregular = sumByCategory(expenses, 'irregular');
+
+    const prepared = expenses
+      .filter(
+        item =>
+          item.category === 'irregular' &&
+          item.tag === 'prepared'
+      )
+      .reduce(
+        (sum, item) => sum + Number(item.amount || 0),
+        0
+      );
+
+    const special = expenses
+      .filter(
+        item =>
+          item.category === 'irregular' &&
+          item.tag === 'special'
+      )
+      .reduce(
+        (sum, item) => sum + Number(item.amount || 0),
+        0
+      );
+
+    const income = getMonthlyIncomes(
+      currentYear,
+      currentMonth
+    ).reduce(
+      (sum, item) => sum + Number(item.amount || 0),
+      0
+    );
+
+    return {
+      living,
+      fixed,
+      irregular,
+      prepared,
+      special,
+      income
+    };
+  }
+
+
+  /* =========================================================
+     월별 화면
+     ========================================================= */
+
+  function renderMonthly() {
+    const summary = getMonthlySummary();
+
+    document.getElementById(
+      'monthly-living-total'
+    ).textContent = formatWon(summary.living);
+
+    document.getElementById(
+      'monthly-fixed-total'
+    ).textContent = formatWon(summary.fixed);
+
+    document.getElementById(
+      'monthly-irregular-total'
+    ).textContent = formatWon(summary.irregular);
+
+    document.getElementById(
+      'monthly-living-goal'
+    ).textContent = formatWon(
+      getGoal('living')
+    );
+
+    document.getElementById(
+      'monthly-fixed-goal'
+    ).textContent = formatWon(
+      getGoal('fixed')
+    );
+
+    document.getElementById(
+      'monthly-prepared-goal'
+    ).textContent = formatWon(
+      getGoal('prepared')
+    );
+
+    document.getElementById(
+      'monthly-asset-total'
+    ).textContent = formatWon(
+      getAssetAmount()
+    );
+
+    renderExpenseList();
+  }
+
+
+  /* =========================================================
+     지출 목록
+     ========================================================= */
+
+  function renderExpenseList() {
+    const container = document.getElementById(
+      'expense-list'
+    );
+
+    if (!container) return;
+
+    const sortType =
+      document.getElementById('expense-sort-select')?.value ||
+      'date';
+
+    let expenses = getMonthlyExpenses(
+      currentYear,
+      currentMonth
+    );
+
+    expenses = sortRecords(
+      expenses,
+      sortType
+    );
+
+    if (expenses.length === 0) {
+      container.innerHTML = `
+        <div class="empty-record">
+          <div class="empty-record-icon">🧾</div>
+          <strong>아직 지출내역이 없습니다.</strong>
+          <span>지출 추가 버튼으로 이번 달 지출을 기록해보세요.</span>
+        </div>
+      `;
+
+      return;
+    }
+
+    container.innerHTML = expenses
+      .map(expense => {
+        const categoryLabel =
+          getCategoryLabel(expense.category);
+
+        const tagLabel =
+          getTagLabel(
+            expense.category,
+            expense.tag
+          );
+
+        const livingClass =
+          expense.category === 'living'
+            ? 'living-record'
+            : '';
+
+        return `
+          <div
+            class="finance-record ${livingClass}"
+            data-record-id="${expense.id}"
+          >
+
+            <div class="record-date">
+              ${formatShortDate(expense.date)}
+            </div>
+
+            <div class="record-main">
+              <div class="record-description">
+                ${escapeHtml(expense.description)}
+              </div>
+
+              <div class="record-meta">
+                <span class="category-badge category-${expense.category}">
+                  ${categoryLabel}
+                </span>
+
+                <span class="tag-badge">
+                  ${tagLabel}
+                </span>
+              </div>
+            </div>
+
+            <div class="record-amount">
+              ${formatWon(expense.amount)}
+            </div>
+
+            <div class="record-actions">
+              <button
+                type="button"
+                class="record-edit-btn"
+                data-action="edit-expense"
+                data-id="${expense.id}"
+              >
+                수정
+              </button>
+
+              <button
+                type="button"
+                class="record-delete-btn"
+                data-action="delete-expense"
+                data-id="${expense.id}"
+              >
+                삭제
+              </button>
+            </div>
+
+          </div>
+        `;
+      })
+      .join('');
+  }
+
+
+  function sortRecords(records, type) {
+    return [...records].sort((a, b) => {
+
+      if (type === 'input') {
+        return (
+          Number(b.createdAt || 0) -
+          Number(a.createdAt || 0)
+        );
+      }
+
+      const dateCompare =
+        String(b.date).localeCompare(
+          String(a.date)
+        );
+
+      if (dateCompare !== 0) {
+        return dateCompare;
+      }
+
+      return (
+        Number(b.createdAt || 0) -
+        Number(a.createdAt || 0)
+      );
     });
+  }
 
 
-  /* ==========================================
-     지출 태그
-     ========================================== */
+  function formatShortDate(dateString) {
+    if (!dateString) return '';
 
-  function updateExpenseTags() {
+    const parts = dateString.split('-');
+
+    return `${Number(parts[1])}/${Number(parts[2])}`;
+  }
+
+
+  /* =========================================================
+     카테고리
+     ========================================================= */
+
+  function getCategoryLabel(category) {
+    return {
+      living: '생활비',
+      fixed: '고정지출',
+      irregular: '비정기지출'
+    }[category] || category;
+  }
+
+
+  function getTagLabel(category, tag) {
+    const item = TAGS[category]?.find(
+      item => item.value === tag
+    );
+
+    return item?.label || tag || '';
+  }
+
+
+  function updateTagOptions(selectedTag = '') {
+    const category =
+      document.getElementById(
+        'expense-category'
+      ).value;
+
+    const select =
+      document.getElementById(
+        'expense-tag'
+      );
+
+    const tags = TAGS[category] || [];
+
+    select.innerHTML = tags
+      .map(tag => `
+        <option value="${tag.value}">
+          ${tag.label}
+        </option>
+      `)
+      .join('');
+
+    if (
+      selectedTag &&
+      tags.some(tag => tag.value === selectedTag)
+    ) {
+      select.value = selectedTag;
+    }
+
+    updateTagHint();
+  }
+
+
+  function updateTagHint() {
+    const category =
+      document.getElementById(
+        'expense-category'
+      ).value;
+
+    const tag =
+      document.getElementById(
+        'expense-tag'
+      ).value;
+
+    const hint =
+      document.getElementById(
+        'expense-tag-hint'
+      );
+
+    hint.textContent =
+      TAG_HINTS[category]?.[tag] || '';
+  }
+
+
+  /* =========================================================
+     지출 팝업
+     ========================================================= */
+
+  function openExpenseModal(expense = null) {
+    const modal =
+      document.getElementById('expense-modal');
+
+    const title =
+      document.getElementById(
+        'expense-modal-title'
+      );
+
+    const editId =
+      document.getElementById(
+        'expense-edit-id'
+      );
+
+    const date =
+      document.getElementById(
+        'expense-date'
+      );
+
+    const description =
+      document.getElementById(
+        'expense-description'
+      );
+
+    const amount =
+      document.getElementById(
+        'expense-amount'
+      );
 
     const category =
       document.getElementById(
-        "expense-category"
-      )?.value;
-
-    const tagSelect =
-      document.getElementById(
-        "expense-tag"
+        'expense-category'
       );
 
-    if (!tagSelect) return;
+    if (expense) {
+      title.textContent = '지출 수정';
 
+      editId.value = expense.id;
+      date.value = expense.date;
+      description.value = expense.description;
+      amount.value = formatNumber(expense.amount);
+      category.value = expense.category;
 
-    let tags = [];
+      updateTagOptions(expense.tag);
 
+    } else {
+      title.textContent = '지출 추가';
 
-    if (category === "living") {
+      editId.value = '';
+      date.value = todayString();
+      description.value = '';
+      amount.value = '';
 
-      tags = [
-        "식비",
-        "간식비",
-        "쇼핑"
-      ];
+      category.value = 'living';
 
+      updateTagOptions('food');
     }
 
-    else if (category === "fixed") {
+    openModal('expense-modal');
 
-      tags = [
-        "보험",
-        "통신",
-        "구독",
-        "자동차",
-        "기타"
-      ];
-
-    }
-
-    else {
-
-      tags = [
-        "빅이벤트",
-        "경조사"
-      ];
-
-    }
-
-
-    tagSelect.innerHTML =
-      tags
-        .map(tag =>
-          `<option value="${escapeHTML(tag)}">${escapeHTML(tag)}</option>`
-        )
-        .join("");
-
+    setTimeout(() => {
+      description.focus();
+    }, 50);
   }
 
 
-  document
-    .getElementById("expense-category")
-    ?.addEventListener(
-      "change",
-      updateExpenseTags
+  function handleExpenseSubmit(event) {
+    event.preventDefault();
+
+    const editId =
+      document.getElementById(
+        'expense-edit-id'
+      ).value;
+
+    const date =
+      document.getElementById(
+        'expense-date'
+      ).value;
+
+    const description =
+      document.getElementById(
+        'expense-description'
+      ).value.trim();
+
+    const amount =
+      parseMoney(
+        document.getElementById(
+          'expense-amount'
+        ).value
+      );
+
+    const category =
+      document.getElementById(
+        'expense-category'
+      ).value;
+
+    const tag =
+      document.getElementById(
+        'expense-tag'
+      ).value;
+
+    if (!date || !description || amount <= 0) {
+      alert('날짜, 내용, 금액을 확인해주세요.');
+      return;
+    }
+
+    if (editId) {
+      const target = data.expenses.find(
+        item => item.id === editId
+      );
+
+      if (target) {
+        target.date = date;
+        target.description = description;
+        target.amount = amount;
+        target.category = category;
+        target.tag = tag;
+      }
+
+    } else {
+      data.expenses.push({
+        id: createId('expense'),
+        date,
+        description,
+        amount,
+        category,
+        tag,
+        createdAt: Date.now()
+      });
+    }
+
+    saveData();
+
+    closeModal('expense-modal');
+    renderAll();
+  }
+
+
+  /* =========================================================
+     수입
+     ========================================================= */
+
+  function openIncomeModal(income = null) {
+    const modal =
+      document.getElementById('income-modal');
+
+    const title =
+      document.getElementById(
+        'income-modal-title'
+      );
+
+    const editId =
+      document.getElementById(
+        'income-edit-id'
+      );
+
+    const date =
+      document.getElementById(
+        'income-date'
+      );
+
+    const description =
+      document.getElementById(
+        'income-description'
+      );
+
+    const amount =
+      document.getElementById(
+        'income-amount'
+      );
+
+    const category =
+      document.getElementById(
+        'income-category'
+      );
+
+    if (income) {
+      title.textContent = '수입 수정';
+
+      editId.value = income.id;
+      date.value = income.date;
+      description.value = income.description;
+      amount.value = formatNumber(income.amount);
+      category.value = income.category;
+
+    } else {
+      title.textContent = '수입 추가';
+
+      editId.value = '';
+      date.value = todayString();
+      description.value = '';
+      amount.value = '';
+
+      category.value = 'salary';
+    }
+
+    openModal('income-modal');
+
+    setTimeout(() => {
+      description.focus();
+    }, 50);
+  }
+
+
+  function handleIncomeSubmit(event) {
+    event.preventDefault();
+
+    const editId =
+      document.getElementById(
+        'income-edit-id'
+      ).value;
+
+    const date =
+      document.getElementById(
+        'income-date'
+      ).value;
+
+    const description =
+      document.getElementById(
+        'income-description'
+      ).value.trim();
+
+    const amount =
+      parseMoney(
+        document.getElementById(
+          'income-amount'
+        ).value
+      );
+
+    const category =
+      document.getElementById(
+        'income-category'
+      ).value;
+
+    if (!date || !description || amount <= 0) {
+      alert('날짜, 내용, 금액을 확인해주세요.');
+      return;
+    }
+
+    if (editId) {
+      const target = data.incomes.find(
+        item => item.id === editId
+      );
+
+      if (target) {
+        target.date = date;
+        target.description = description;
+        target.amount = amount;
+        target.category = category;
+      }
+
+    } else {
+      data.incomes.push({
+        id: createId('income'),
+        date,
+        description,
+        amount,
+        category,
+        createdAt: Date.now()
+      });
+    }
+
+    saveData();
+
+    closeModal('income-modal');
+    renderAll();
+
+    /*
+     * 수입 팝업이 열려 있었다면 최신 내용으로 갱신
+     */
+    if (
+      !document
+        .getElementById('income-history-modal')
+        .classList.contains('hidden')
+    ) {
+      renderIncomeHistory();
+    }
+  }
+
+
+  function renderIncomeHistory() {
+    const container =
+      document.getElementById(
+        'income-history-list'
+      );
+
+    const title =
+      document.getElementById(
+        'income-history-title'
+      );
+
+    title.textContent =
+      `${currentMonth}월 수입 내역`;
+
+    const sortType =
+      document.getElementById(
+        'income-sort-select'
+      )?.value || 'date';
+
+    let incomes =
+      getMonthlyIncomes(
+        currentYear,
+        currentMonth
+      );
+
+    incomes = sortRecords(
+      incomes,
+      sortType
     );
 
-
-  /* ==========================================
-     지출 저장
-     ========================================== */
-
-  document
-    .getElementById("annual-save-expense")
-    ?.addEventListener("click", () => {
-
-      const date =
-        document.getElementById(
-          "expense-date"
-        ).value;
-
-      const title =
-        document.getElementById(
-          "expense-title"
-        ).value.trim();
-
-      const amount =
-        Number(
-          document.getElementById(
-            "expense-amount"
-          ).value
-        );
-
-      const category =
-        document.getElementById(
-          "expense-category"
-        ).value;
-
-      const tag =
-        document.getElementById(
-          "expense-tag"
-        ).value;
-
-
-      if (!date) {
-
-        alert("날짜를 입력해주세요.");
-        return;
-
-      }
-
-
-      if (!title) {
-
-        alert("내용을 입력해주세요.");
-        return;
-
-      }
-
-
-      if (!amount || amount <= 0) {
-
-        alert("금액을 입력해주세요.");
-        return;
-
-      }
-
-
-      data.expenses.push({
-
-        id:
-          `expense-${Date.now()}-${Math.random()}`,
-
-        date,
-
-        title,
-
-        amount,
-
-        category,
-
-        tag
-
-      });
-
-
-      saveData();
-
-
-      const dateParts =
-        date.split("-");
-
-      currentYear =
-        Number(dateParts[0]);
-
-      currentMonth =
-        Number(dateParts[1]);
-
-
-      closeModal(
-        "annual-expense-modal"
-      );
-
-
-      renderMonthly();
-
-    });
-
-
-  /* ==========================================
-     수입 팝업
-     ========================================== */
-
-  document
-    .getElementById("annual-open-income")
-    ?.addEventListener("click", () => {
-
-      setDefaultDate("income-date");
-
-      document.getElementById(
-        "income-title"
-      ).value = "";
-
-      document.getElementById(
-        "income-amount"
-      ).value = "";
-
-      document.getElementById(
-        "income-category"
-      ).value = "salary";
-
-
-      openModal(
-        "annual-income-modal"
-      );
-
-    });
-
-
-  /* ==========================================
-     수입 저장
-     ========================================== */
-
-  document
-    .getElementById("annual-save-income")
-    ?.addEventListener("click", () => {
-
-      const date =
-        document.getElementById(
-          "income-date"
-        ).value;
-
-      const title =
-        document.getElementById(
-          "income-title"
-        ).value.trim();
-
-      const amount =
-        Number(
-          document.getElementById(
-            "income-amount"
-          ).value
-        );
-
-      const category =
-        document.getElementById(
-          "income-category"
-        ).value;
-
-
-      if (!date) {
-
-        alert("날짜를 입력해주세요.");
-        return;
-
-      }
-
-
-      if (!title) {
-
-        alert("내용을 입력해주세요.");
-        return;
-
-      }
-
-
-      if (!amount || amount <= 0) {
-
-        alert("금액을 입력해주세요.");
-        return;
-
-      }
-
-
-      data.incomes.push({
-
-        id:
-          `income-${Date.now()}-${Math.random()}`,
-
-        date,
-
-        title,
-
-        amount,
-
-        category
-
-      });
-
-
-      saveData();
-
-
-      const dateParts =
-        date.split("-");
-
-      currentYear =
-        Number(dateParts[0]);
-
-      currentMonth =
-        Number(dateParts[1]);
-
-
-      closeModal(
-        "annual-income-modal"
-      );
-
-
-      renderMonthly();
-
-    });
-
-
-  /* ==========================================
-     목표 설정
-     ========================================== */
-
-  document
-    .querySelectorAll(
-      "[data-goal-category]"
-    )
-    .forEach(card => {
-
-      card.addEventListener("click", () => {
-
-        selectedGoalCategory =
-          card.getAttribute(
-            "data-goal-category"
-          );
-
-
-        const key =
-          monthKey(
-            currentYear,
-            currentMonth
-          );
-
-
-        const currentGoal =
-          data.goals[key]?.[
-            selectedGoalCategory
-          ] || "";
-
-
-        document.getElementById(
-          "goal-modal-title"
-        ).textContent =
-          `${selectedGoalCategory === "living"
-            ? "생활비"
-            : "고정지출"} 목표 설정`;
-
-
-        document.getElementById(
-          "goal-amount"
-        ).value =
-          currentGoal;
-
-
-        openModal(
-          "annual-goal-modal"
-        );
-
-      });
-
-    });
-
-
-  /* ==========================================
-     목표 저장
-     ========================================== */
-
-  document
-    .getElementById("annual-save-goal")
-    ?.addEventListener("click", () => {
-
-      if (!selectedGoalCategory) return;
-
-
-      const amount =
-        Number(
-          document.getElementById(
-            "goal-amount"
-          ).value
-        );
-
-
-      if (!amount || amount <= 0) {
-
-        alert("목표 금액을 입력해주세요.");
-        return;
-
-      }
-
-
-      const key =
-        monthKey(
-          currentYear,
-          currentMonth
-        );
-
-
-      if (!data.goals[key]) {
-
-        data.goals[key] = {};
-
-      }
-
-
-      data.goals[key][
-        selectedGoalCategory
-      ] = amount;
-
-
-      saveData();
-
-
-      closeModal(
-        "annual-goal-modal"
-      );
-
-
-      renderMonthly();
-
-    });
-
-
-  /* ==========================================
-     연간 예상치
-     ========================================== */
-
-  document
-    .getElementById("annual-edit-forecast")
-    ?.addEventListener("click", () => {
-
-      const key =
-        String(currentYear);
-
-
-      const forecast =
-        data.forecasts[key] || {};
-
-
-      document.getElementById(
-        "forecast-income"
-      ).value =
-        forecast.income || "";
-
-
-      document.getElementById(
-        "forecast-expense"
-      ).value =
-        forecast.expense || "";
-
-
-      openModal(
-        "annual-forecast-modal"
-      );
-
-    });
-
-
-  document
-    .getElementById("annual-save-forecast")
-    ?.addEventListener("click", () => {
-
-      const income =
-        Number(
-          document.getElementById(
-            "forecast-income"
-          ).value
-        );
-
-
-      const expense =
-        Number(
-          document.getElementById(
-            "forecast-expense"
-          ).value
-        );
-
-
-      if (!income && !expense) {
-
-        alert(
-          "예상 수입 또는 예상 지출을 입력해주세요."
-        );
-
-        return;
-
-      }
-
-
-      data.forecasts[
-        String(currentYear)
-      ] = {
-
-        income:
-          income || 0,
-
-        expense:
-          expense || 0
-
-      };
-
-
-      saveData();
-
-
-      closeModal(
-        "annual-forecast-modal"
-      );
-
-
-      renderYearly();
-
-    });
-
-
-  /* ==========================================
+    if (incomes.length === 0) {
+      container.innerHTML = `
+        <div class="empty-record">
+          <div class="empty-record-icon">💰</div>
+          <strong>아직 수입내역이 없습니다.</strong>
+          <span>수입 추가 버튼으로 수입을 기록해보세요.</span>
+        </div>
+      `;
+
+      return;
+    }
+
+    const total = incomes.reduce(
+      (sum, item) =>
+        sum + Number(item.amount || 0),
+      0
+    );
+
+    container.innerHTML = `
+      <div class="income-history-total">
+        <span>이번 달 수입 합계</span>
+        <strong>${formatWon(total)}</strong>
+      </div>
+
+      ${incomes.map(income => `
+        <div
+          class="finance-record income-record"
+          data-record-id="${income.id}"
+        >
+
+          <div class="record-date">
+            ${formatShortDate(income.date)}
+          </div>
+
+          <div class="record-main">
+
+            <div class="record-description">
+              ${escapeHtml(income.description)}
+            </div>
+
+            <div class="record-meta">
+              <span class="category-badge income-category-badge">
+                ${getIncomeCategoryLabel(income.category)}
+              </span>
+            </div>
+
+          </div>
+
+          <div class="record-amount">
+            ${formatWon(income.amount)}
+          </div>
+
+          <div class="record-actions">
+
+            <button
+              type="button"
+              class="record-edit-btn"
+              data-action="edit-income"
+              data-id="${income.id}"
+            >
+              수정
+            </button>
+
+            <button
+              type="button"
+              class="record-delete-btn"
+              data-action="delete-income"
+              data-id="${income.id}"
+            >
+              삭제
+            </button>
+
+          </div>
+
+        </div>
+      `).join('')}
+    `;
+  }
+
+
+  function getIncomeCategoryLabel(category) {
+    return {
+      allowance: '수당',
+      salary: '월급',
+      bonus: '보너스'
+    }[category] || category;
+  }
+
+
+  /* =========================================================
      삭제
-     ========================================== */
+     ========================================================= */
 
-  function deleteExpense(id) {
+  function askDelete(type, id) {
+    pendingDelete = {
+      type,
+      id
+    };
 
-    if (
-      !confirm(
-        "이 지출 내역을 삭제할까요?"
-      )
-    ) {
-      return;
+    openModal('delete-confirm-modal');
+  }
+
+
+  function executeDelete() {
+    if (!pendingDelete) return;
+
+    const { type, id } = pendingDelete;
+
+    if (type === 'expense') {
+      data.expenses =
+        data.expenses.filter(
+          item => item.id !== id
+        );
     }
 
-
-    data.expenses =
-      data.expenses.filter(
-        item => item.id !== id
-      );
-
+    if (type === 'income') {
+      data.incomes =
+        data.incomes.filter(
+          item => item.id !== id
+        );
+    }
 
     saveData();
 
-    renderMonthly();
-    renderYearly();
+    pendingDelete = null;
 
-  }
+    closeModal('delete-confirm-modal');
 
-
-  function deleteIncome(id) {
+    renderAll();
 
     if (
-      !confirm(
-        "이 수입 내역을 삭제할까요?"
-      )
+      !document
+        .getElementById('income-history-modal')
+        .classList.contains('hidden')
     ) {
-      return;
+      renderIncomeHistory();
+    }
+  }
+
+
+  /* =========================================================
+     목표금액 팝업
+     ========================================================= */
+
+  function openGoalModal(type) {
+    const title =
+      document.getElementById(
+        'goal-modal-title'
+      );
+
+    const description =
+      document.getElementById(
+        'goal-modal-description'
+      );
+
+    const typeInput =
+      document.getElementById(
+        'goal-type'
+      );
+
+    const amount =
+      document.getElementById(
+        'goal-amount'
+      );
+
+    const titles = {
+      living: '생활비 목표금액',
+      fixed: '고정지출 목표금액',
+      prepared: '준비지출 연간 목표금액'
+    };
+
+    title.textContent =
+      titles[type] || '목표금액 설정';
+
+    if (type === 'prepared') {
+      description.textContent =
+        '이 달부터 이후 달의 준비지출 연간 목표금액에 적용됩니다.';
+    } else {
+      description.textContent =
+        '이 달부터 이후 달의 목표금액에 적용됩니다. 이전 달에는 영향을 주지 않습니다.';
     }
 
+    typeInput.value = type;
 
-    data.incomes =
-      data.incomes.filter(
-        item => item.id !== id
-      );
+    amount.value = formatNumber(
+      getGoal(type)
+    );
 
+    openModal('goal-modal');
 
-    saveData();
-
-    renderMonthly();
-    renderYearly();
-
+    setTimeout(() => {
+      amount.focus();
+      amount.select();
+    }, 50);
   }
 
 
-  /* ==========================================
-     월별 화면
-     ========================================== */
+  function handleGoalSubmit(event) {
+    event.preventDefault();
 
-  function renderMonthly() {
+    const type =
+      document.getElementById(
+        'goal-type'
+      ).value;
 
-    document.getElementById(
-      "annual-period-button"
-    ).textContent =
-      `${currentYear}년 ${currentMonth}월`;
-
-
-    const expenses =
-      getCurrentExpenses();
-
-    const incomes =
-      getCurrentIncomes();
-
-
-    const livingTotal =
-      expenses
-        .filter(
-          item => item.category === "living"
-        )
-        .reduce(
-          (sum, item) =>
-            sum + Number(item.amount),
-          0
-        );
-
-
-    const fixedTotal =
-      expenses
-        .filter(
-          item => item.category === "fixed"
-        )
-        .reduce(
-          (sum, item) =>
-            sum + Number(item.amount),
-          0
-        );
-
-
-    const irregularTotal =
-      expenses
-        .filter(
-          item => item.category === "irregular"
-        )
-        .reduce(
-          (sum, item) =>
-            sum + Number(item.amount),
-          0
-        );
-
-
-    const allExpenseTotal =
-      livingTotal +
-      fixedTotal +
-      irregularTotal;
-
-
-    const incomeTotal =
-      incomes.reduce(
-        (sum, item) =>
-          sum + Number(item.amount),
-        0
+    const amount =
+      parseMoney(
+        document.getElementById(
+          'goal-amount'
+        ).value
       );
-
-
-    /* 생활비 */
-
-    document.getElementById(
-      "monthly-living-total"
-    ).textContent =
-      formatWon(livingTotal);
-
-
-    /* 고정지출 */
-
-    document.getElementById(
-      "monthly-fixed-total"
-    ).textContent =
-      formatWon(fixedTotal);
-
-
-    /* 비정기 */
-
-    document.getElementById(
-      "monthly-irregular-total"
-    ).textContent =
-      formatWon(irregularTotal);
-
-
-    /* 전체 지출 */
-
-    document.getElementById(
-      "monthly-all-expense-total"
-    ).textContent =
-      formatWon(allExpenseTotal);
-
-
-    /* 수입 */
-
-    document.getElementById(
-      "monthly-income-total"
-    ).textContent =
-      formatWon(incomeTotal);
-
-
-    document.getElementById(
-      "monthly-income-count"
-    ).textContent =
-      `${incomes.length}건`;
-
-
-    /* 목표 */
-
-    renderMonthlyGoals();
-
-    renderIncomeList(incomes);
-    renderExpenseList(expenses);
-
-  }
-
-
-  /* ==========================================
-     월별 목표 표시
-     ========================================== */
-
-  function renderMonthlyGoals() {
 
     const key =
       monthKey(
@@ -1117,819 +1264,1139 @@
         currentMonth
       );
 
-
-    const goals =
-      data.goals[key] || {};
-
-
-    updateGoalCard(
-      "living",
-      goals.living
+    setFutureSetting(
+      type,
+      amount,
+      key
     );
 
+    saveData();
 
-    updateGoalCard(
-      "fixed",
-      goals.fixed
+    closeModal('goal-modal');
+
+    renderAll();
+  }
+
+
+  /* =========================================================
+     자산축적
+     ========================================================= */
+
+  function openAssetModal() {
+    const input =
+      document.getElementById(
+        'asset-amount'
+      );
+
+    input.value = formatNumber(
+      getAssetAmount()
     );
 
+    openModal('asset-modal');
+
+    setTimeout(() => {
+      input.focus();
+      input.select();
+    }, 50);
   }
 
 
-  function updateGoalCard(
-    category,
-    goal
-  ) {
+  function handleAssetSubmit(event) {
+    event.preventDefault();
 
-    const totalElement =
-      document.getElementById(
-        category === "living"
-          ? "monthly-living-total"
-          : "monthly-fixed-total"
+    const amount =
+      parseMoney(
+        document.getElementById(
+          'asset-amount'
+        ).value
       );
 
+    setAssetAmount(amount);
 
-    const goalElement =
-      document.getElementById(
-        category === "living"
-          ? "monthly-living-goal"
-          : "monthly-fixed-goal"
-      );
+    saveData();
 
+    closeModal('asset-modal');
 
-    const percentElement =
-      document.getElementById(
-        category === "living"
-          ? "monthly-living-percent"
-          : "monthly-fixed-percent"
-      );
-
-
-    const progressElement =
-      document.getElementById(
-        category === "living"
-          ? "monthly-living-progress"
-          : "monthly-fixed-progress"
-      );
-
-
-    const total =
-      Number(
-        totalElement.textContent
-          .replaceAll(",", "")
-          .replace("원", "")
-      );
-
-
-    if (!goal) {
-
-      goalElement.textContent =
-        "목표 미설정";
-
-      percentElement.textContent =
-        "-";
-
-      progressElement.style.width =
-        "0%";
-
-      return;
-
-    }
-
-
-    const percent =
-      (total / goal) * 100;
-
-
-    goalElement.textContent =
-      `목표 ${formatWon(goal)}`;
-
-
-    percentElement.textContent =
-      `${Math.round(percent)}%`;
-
-
-    progressElement.style.width =
-      `${Math.min(percent, 100)}%`;
-
+    renderAll();
   }
 
 
-  /* ==========================================
-     수입 리스트
-     ========================================== */
-
-  function renderIncomeList(incomes) {
-
-    const container =
-      document.getElementById(
-        "annual-income-list"
-      );
-
-
-    container.innerHTML = "";
-
-
-    if (!incomes.length) {
-
-      container.innerHTML = `
-        <div class="annual-empty">
-          아직 입력된 수입 내역이 없습니다.
-        </div>
-      `;
-
-      return;
-
-    }
-
-
-    const sorted =
-      [...incomes].sort(
-        (a, b) =>
-          b.date.localeCompare(a.date)
-      );
-
-
-    sorted.forEach(item => {
-
-      const element =
-        document.createElement("div");
-
-      element.className =
-        "annual-record income";
-
-
-      element.innerHTML = `
-
-        <div class="annual-record-date">
-          ${escapeHTML(
-            item.date.substring(5).replace("-", "/")
-          )}
-        </div>
-
-        <div class="annual-record-info">
-
-          <strong>
-            ${escapeHTML(item.title)}
-          </strong>
-
-          <span>
-            ${escapeHTML(
-              categoryName(item.category)
-            )}
-          </span>
-
-        </div>
-
-        <strong class="annual-record-amount">
-          ${formatWon(item.amount)}
-        </strong>
-
-        <button
-          class="annual-record-delete"
-        >
-          ×
-        </button>
-
-      `;
-
-
-      element
-        .querySelector(
-          ".annual-record-delete"
-        )
-        .addEventListener(
-          "click",
-          () => deleteIncome(item.id)
-        );
-
-
-      container.appendChild(element);
-
-    });
-
-  }
-
-
-  /* ==========================================
-     지출 리스트
-     ========================================== */
-
-  function renderExpenseList(expenses) {
-
-    const container =
-      document.getElementById(
-        "annual-expense-list"
-      );
-
-
-    container.innerHTML = "";
-
-
-    if (!expenses.length) {
-
-      container.innerHTML = `
-        <div class="annual-empty">
-          아직 입력된 지출 내역이 없습니다.
-        </div>
-      `;
-
-      return;
-
-    }
-
-
-    const sorted =
-      [...expenses].sort(
-        (a, b) =>
-          b.date.localeCompare(a.date)
-      );
-
-
-    sorted.forEach(item => {
-
-      const element =
-        document.createElement("div");
-
-
-      element.className =
-        `annual-record expense ${
-          item.category === "living"
-            ? "living-record"
-            : ""
-        }`;
-
-
-      element.innerHTML = `
-
-        <div class="annual-record-date">
-          ${escapeHTML(
-            item.date.substring(5).replace("-", "/")
-          )}
-        </div>
-
-        <div class="annual-record-info">
-
-          <strong>
-            ${escapeHTML(item.title)}
-          </strong>
-
-          <span>
-
-            <em class="${categoryClass(item.category)}">
-              ${escapeHTML(
-                categoryName(item.category)
-              )}
-            </em>
-
-            ${escapeHTML(item.tag)}
-
-          </span>
-
-        </div>
-
-        <strong class="annual-record-amount">
-          ${formatWon(item.amount)}
-        </strong>
-
-        <button
-          class="annual-record-delete"
-        >
-          ×
-        </button>
-
-      `;
-
-
-      element
-        .querySelector(
-          ".annual-record-delete"
-        )
-        .addEventListener(
-          "click",
-          () => deleteExpense(item.id)
-        );
-
-
-      container.appendChild(element);
-
-    });
-
-  }
-
-
-  /* ==========================================
-     연간 데이터
-     ========================================== */
-
-  function getYearExpenses(year) {
-
-    return data.expenses.filter(
-      item =>
-        item.date.startsWith(`${year}-`)
-    );
-
-  }
-
-
-  function getYearIncomes(year) {
-
-    return data.incomes.filter(
-      item =>
-        item.date.startsWith(`${year}-`)
-    );
-
-  }
-
-
-  /* ==========================================
+  /* =========================================================
      연간 화면
-     ========================================== */
+     ========================================================= */
 
   function renderYearly() {
-
     document.getElementById(
-      "annual-year-label"
+      'yearly-year'
     ).textContent =
       `${currentYear}년`;
 
-
-    const expenses =
-      getYearExpenses(currentYear);
-
-    const incomes =
-      getYearIncomes(currentYear);
-
-
-    const living =
-      sumCategory(
-        expenses,
-        "living"
+    const yearExpenses =
+      data.expenses.filter(
+        item =>
+          item.date.startsWith(
+            `${currentYear}-`
+          )
       );
 
-
-    const fixed =
-      sumCategory(
-        expenses,
-        "fixed"
+    const yearIncomes =
+      data.incomes.filter(
+        item =>
+          item.date.startsWith(
+            `${currentYear}-`
+          )
       );
 
-
-    const event =
-      expenses
-        .filter(
-          item =>
-            item.category === "irregular" &&
-            item.tag === "경조사"
-        )
-        .reduce(
-          (sum, item) =>
-            sum + Number(item.amount),
-          0
-        );
-
-
-    const bigEvent =
-      expenses
-        .filter(
-          item =>
-            item.category === "irregular" &&
-            item.tag === "빅이벤트"
-        )
-        .reduce(
-          (sum, item) =>
-            sum + Number(item.amount),
-          0
-        );
-
-
-    const totalExpense =
-      living +
-      fixed +
-      event +
-      bigEvent;
-
-
-    const totalIncome =
-      incomes.reduce(
+    const incomeTotal =
+      yearIncomes.reduce(
         (sum, item) =>
-          sum + Number(item.amount),
+          sum + Number(item.amount || 0),
         0
       );
 
+    const expenseTotal =
+      yearExpenses.reduce(
+        (sum, item) =>
+          sum + Number(item.amount || 0),
+        0
+      );
+
+    const living =
+      sumByCategory(
+        yearExpenses,
+        'living'
+      );
+
+    const fixed =
+      sumByCategory(
+        yearExpenses,
+        'fixed'
+      );
+
+    const prepared =
+      yearExpenses
+        .filter(
+          item =>
+            item.category === 'irregular' &&
+            item.tag === 'prepared'
+        )
+        .reduce(
+          (sum, item) =>
+            sum + Number(item.amount || 0),
+          0
+        );
+
+    const special =
+      yearExpenses
+        .filter(
+          item =>
+            item.category === 'irregular' &&
+            item.tag === 'special'
+        )
+        .reduce(
+          (sum, item) =>
+            sum + Number(item.amount || 0),
+          0
+        );
 
     const balance =
-      totalIncome -
-      totalExpense;
-
+      incomeTotal -
+      expenseTotal -
+      getYearlyAssetTotal();
 
     document.getElementById(
-      "yearly-income-total"
+      'yearly-income-total'
     ).textContent =
-      formatWon(totalIncome);
-
+      formatWon(incomeTotal);
 
     document.getElementById(
-      "yearly-expense-total"
+      'yearly-expense-total'
     ).textContent =
-      formatWon(totalExpense);
-
+      formatWon(expenseTotal);
 
     document.getElementById(
-      "yearly-balance-total"
+      'yearly-balance-total'
     ).textContent =
       formatWon(balance);
 
-
     document.getElementById(
-      "yearly-living-total"
+      'yearly-living-total'
     ).textContent =
       formatWon(living);
 
-
     document.getElementById(
-      "yearly-fixed-total"
+      'yearly-fixed-total'
     ).textContent =
       formatWon(fixed);
 
+    document.getElementById(
+      'yearly-prepared-total'
+    ).textContent =
+      formatWon(prepared);
 
     document.getElementById(
-      "yearly-event-total"
+      'yearly-special-total'
     ).textContent =
-      formatWon(event);
-
+      formatWon(special);
 
     document.getElementById(
-      "yearly-big-event-total"
+      'yearly-asset-total'
     ).textContent =
-      formatWon(bigEvent);
-
+      formatWon(
+        getYearlyAssetTotal()
+      );
 
     renderForecast();
-    renderTagStatistics();
-    renderMonthlyTable();
-
+    renderTagStatistics(yearExpenses);
+    renderMonthStatistics(yearExpenses);
   }
 
 
-  function sumCategory(
-    expenses,
-    category
-  ) {
+  function getYearlyAssetTotal() {
+    let total = 0;
 
-    return expenses
-      .filter(
-        item =>
-          item.category === category
+    for (let month = 1; month <= 12; month++) {
+      total += getAssetAmount(
+        currentYear,
+        month
+      );
+    }
+
+    return total;
+  }
+
+
+  function renderForecast() {
+    const forecast =
+      data.forecasts[currentYear] || {
+        income: 0,
+        expense: 0
+      };
+
+    document.getElementById(
+      'yearly-forecast-income'
+    ).textContent =
+      formatWon(forecast.income);
+
+    document.getElementById(
+      'yearly-forecast-expense'
+    ).textContent =
+      formatWon(forecast.expense);
+  }
+
+
+  function openForecastModal() {
+    const forecast =
+      data.forecasts[currentYear] || {
+        income: 0,
+        expense: 0
+      };
+
+    document.getElementById(
+      'forecast-income'
+    ).value =
+      formatNumber(forecast.income);
+
+    document.getElementById(
+      'forecast-expense'
+    ).value =
+      formatNumber(forecast.expense);
+
+    openModal('forecast-modal');
+  }
+
+
+  function handleForecastSubmit(event) {
+    event.preventDefault();
+
+    data.forecasts[currentYear] = {
+      income: parseMoney(
+        document.getElementById(
+          'forecast-income'
+        ).value
+      ),
+
+      expense: parseMoney(
+        document.getElementById(
+          'forecast-expense'
+        ).value
       )
-      .reduce(
-        (sum, item) =>
-          sum + Number(item.amount),
+    };
+
+    saveData();
+
+    closeModal('forecast-modal');
+
+    renderYearly();
+  }
+
+
+  /* =========================================================
+     연간 통계
+     ========================================================= */
+
+  function renderTagStatistics(yearExpenses) {
+    const container =
+      document.getElementById(
+        'tag-statistics'
+      );
+
+    const stats = {};
+
+    yearExpenses.forEach(item => {
+      const label =
+        `${getCategoryLabel(item.category)} · ${getTagLabel(item.category, item.tag)}`;
+
+      stats[label] =
+        (stats[label] || 0) +
+        Number(item.amount || 0);
+    });
+
+    const sorted =
+      Object.entries(stats)
+        .sort((a, b) => b[1] - a[1]);
+
+    if (sorted.length === 0) {
+      container.innerHTML = `
+        <div class="statistics-empty">
+          아직 기록된 지출이 없습니다.
+        </div>
+      `;
+
+      return;
+    }
+
+    const total =
+      sorted.reduce(
+        (sum, [, amount]) =>
+          sum + amount,
         0
       );
 
+    container.innerHTML = sorted
+      .map(([label, amount]) => {
+        const percent =
+          total > 0
+            ? Math.round(
+                (amount / total) * 100
+              )
+            : 0;
+
+        return `
+          <div class="stat-row">
+
+            <div class="stat-label">
+              <span>${escapeHtml(label)}</span>
+              <strong>${formatWon(amount)}</strong>
+            </div>
+
+            <div class="stat-bar">
+              <div
+                class="stat-bar-fill"
+                style="width:${percent}%"
+              ></div>
+            </div>
+
+            <span class="stat-percent">
+              ${percent}%
+            </span>
+
+          </div>
+        `;
+      })
+      .join('');
   }
 
 
-  /* ==========================================
-     예상치
-     ========================================== */
-
-  function renderForecast() {
-
-    const forecast =
-      data.forecasts[
-        String(currentYear)
-      ];
-
-
-    if (!forecast) {
-
-      document.getElementById(
-        "yearly-forecast-income"
-      ).textContent =
-        "미설정";
-
-
-      document.getElementById(
-        "yearly-forecast-expense"
-      ).textContent =
-        "미설정";
-
-
-      document.getElementById(
-        "yearly-forecast-balance"
-      ).textContent =
-        "미설정";
-
-
-      return;
-
-    }
-
-
-    const income =
-      Number(forecast.income || 0);
-
-    const expense =
-      Number(forecast.expense || 0);
-
-
-    document.getElementById(
-      "yearly-forecast-income"
-    ).textContent =
-      formatWon(income);
-
-
-    document.getElementById(
-      "yearly-forecast-expense"
-    ).textContent =
-      formatWon(expense);
-
-
-    document.getElementById(
-      "yearly-forecast-balance"
-    ).textContent =
-      formatWon(
-        income - expense
-      );
-
-  }
-
-
-  /* ==========================================
-     태그별 통계
-     ========================================== */
-
-  function renderTagStatistics() {
-
+  function renderMonthStatistics() {
     const container =
       document.getElementById(
-        "annual-living-tags"
+        'month-statistics'
       );
 
+    const rows = [];
 
-    container.innerHTML = "";
+    for (let month = 1; month <= 12; month++) {
 
-
-    const expenses =
-      getYearExpenses(currentYear);
-
-
-    const tags = [
-      "식비",
-      "간식비",
-      "쇼핑"
-    ];
-
-
-    tags.forEach(tag => {
-
-      const total =
-        expenses
-          .filter(
-            item =>
-              item.category === "living" &&
-              item.tag === tag
-          )
-          .reduce(
-            (sum, item) =>
-              sum + Number(item.amount),
-            0
-          );
-
-
-      const card =
-        document.createElement("div");
-
-      card.className =
-        "annual-tag-card";
-
-
-      card.innerHTML = `
-
-        <span>${escapeHTML(tag)}</span>
-
-        <strong>
-          ${formatWon(total)}
-        </strong>
-
-      `;
-
-
-      container.appendChild(card);
-
-    });
-
-  }
-
-
-  /* ==========================================
-     월별 통계
-     ========================================== */
-
-  function renderMonthlyTable() {
-
-    const tbody =
-      document.getElementById(
-        "annual-monthly-table"
-      );
-
-
-    tbody.innerHTML = "";
-
-
-    for (
-      let month = 1;
-      month <= 12;
-      month++
-    ) {
-
-      const key =
-        monthKey(
+      const expenses =
+        getMonthlyExpenses(
           currentYear,
           month
         );
 
-
-      const expenses =
-        data.expenses.filter(
-          item =>
-            item.date.startsWith(key)
-        );
-
-
-      const incomes =
-        data.incomes.filter(
-          item =>
-            item.date.startsWith(key)
-        );
-
-
-      const living =
-        sumCategory(
-          expenses,
-          "living"
-        );
-
-
-      const fixed =
-        sumCategory(
-          expenses,
-          "fixed"
-        );
-
-
-      const event =
-        expenses
-          .filter(
-            item =>
-              item.category === "irregular" &&
-              item.tag === "경조사"
-          )
-          .reduce(
-            (sum, item) =>
-              sum + Number(item.amount),
-            0
-          );
-
-
-      const bigEvent =
-        expenses
-          .filter(
-            item =>
-              item.category === "irregular" &&
-              item.tag === "빅이벤트"
-          )
-          .reduce(
-            (sum, item) =>
-              sum + Number(item.amount),
-            0
-          );
-
-
       const income =
-        incomes.reduce(
+        getMonthlyIncomes(
+          currentYear,
+          month
+        ).reduce(
           (sum, item) =>
-            sum + Number(item.amount),
+            sum + Number(item.amount || 0),
           0
         );
 
+      const expense =
+        expenses.reduce(
+          (sum, item) =>
+            sum + Number(item.amount || 0),
+          0
+        );
 
-      const total =
-        living +
-        fixed +
-        event +
-        bigEvent;
+      const asset =
+        getAssetAmount(
+          currentYear,
+          month
+        );
 
+      rows.push(`
+        <div class="monthly-stat-row">
 
-      const row =
-        document.createElement("tr");
+          <div class="monthly-stat-month">
+            ${month}월
+          </div>
 
+          <div>
+            <span>수입</span>
+            <strong>${formatWon(income)}</strong>
+          </div>
 
-      row.innerHTML = `
+          <div>
+            <span>지출</span>
+            <strong>${formatWon(expense)}</strong>
+          </div>
 
-        <td>${month}월</td>
+          <div>
+            <span>자산축적</span>
+            <strong>${formatWon(asset)}</strong>
+          </div>
 
-        <td>${formatWon(income)}</td>
-
-        <td class="living-cell">
-          ${formatWon(living)}
-        </td>
-
-        <td>
-          ${formatWon(fixed)}
-        </td>
-
-        <td>
-          ${formatWon(event)}
-        </td>
-
-        <td>
-          ${formatWon(bigEvent)}
-        </td>
-
-        <td class="total-cell">
-          ${formatWon(total)}
-        </td>
-
-      `;
-
-
-      tbody.appendChild(row);
-
+        </div>
+      `);
     }
 
+    container.innerHTML = rows.join('');
   }
 
 
-  /* ==========================================
-     펼치기 / 접기
-     ========================================== */
+  /* =========================================================
+     정보 팝업
+     ========================================================= */
 
-  document
-    .querySelectorAll(
-      ".annual-expand-button"
-    )
-    .forEach(button => {
+  function openInfoModal(type) {
+    const title =
+      document.getElementById(
+        'info-modal-title'
+      );
 
-      button.addEventListener("click", () => {
+    const content =
+      document.getElementById(
+        'info-modal-content'
+      );
 
-        const targetId =
-          button.getAttribute(
-            "data-expand"
-          );
+    const info = {
+
+      living: {
+        title: '생활비',
+        html: `
+          <p>
+            평소 생활하면서 사용하는 돈입니다.
+          </p>
+
+          <div class="info-example-list">
+            <div>🍚 식비</div>
+            <div>☕ 간식비</div>
+            <div>🛍️ 쇼핑</div>
+            <div>📌 기타</div>
+          </div>
+
+          <p class="info-note">
+            월 목표금액을 설정해 관리합니다.
+          </p>
+        `
+      },
+
+      fixed: {
+        title: '고정지출',
+        html: `
+          <p>
+            매달 또는 정기적으로 반복해서 발생하는 지출입니다.
+          </p>
+
+          <div class="info-example-list">
+            <div>🛡️ 보험</div>
+            <div>📱 통신</div>
+            <div>📺 구독</div>
+            <div>⛽ 주유비</div>
+            <div>📌 기타</div>
+          </div>
+
+          <p class="info-note">
+            월 목표금액을 설정해 관리합니다.
+          </p>
+        `
+      },
+
+      irregular: {
+        title: '비정기지출',
+        html: `
+          <p>
+            매달 발생하지 않아 별도로 관리하는 지출입니다.
+          </p>
+
+          <div class="info-sub-box">
+            <strong>준비지출</strong>
+            <p>
+              축의금·조의금·부모님 용돈·명절 용돈·
+              예상 가능한 차량 유지비 등 매년 어느 정도 준비하는 지출입니다.
+            </p>
+            <small>
+              연간 목표금액을 설정할 수 있습니다.
+            </small>
+          </div>
+
+          <div class="info-sub-box">
+            <strong>특별소비</strong>
+            <p>
+              선물·여행·대형 차량수리 등 평소 생활비와 별도로 발생하는 큰 지출입니다.
+            </p>
+          </div>
+        `
+      }
+
+    }[type];
+
+    if (!info) return;
+
+    title.textContent = info.title;
+    content.innerHTML = info.html;
+
+    openModal('annual-info-modal');
+  }
 
 
-        const target =
-          document.getElementById(
-            targetId
-          );
+  /* =========================================================
+     모달
+     ========================================================= */
+
+  function openModal(id) {
+    document
+      .getElementById(id)
+      ?.classList.remove('hidden');
+  }
 
 
-        if (!target) return;
+  function closeModal(id) {
+    document
+      .getElementById(id)
+      ?.classList.add('hidden');
+  }
 
 
-        const isOpen =
-          target.classList.contains("open");
+  function closeAllModals() {
+    document
+      .querySelectorAll(
+        '.annual-modal'
+      )
+      .forEach(modal =>
+        modal.classList.add('hidden')
+      );
+
+    pendingDelete = null;
+  }
 
 
-        target.classList.toggle(
-          "open"
-        );
+  /* =========================================================
+     화면 전체 렌더
+     ========================================================= */
+
+  function renderAll() {
+    const monthlyView =
+      document.getElementById(
+        'monthly-view'
+      );
+
+    const yearlyView =
+      document.getElementById(
+        'yearly-view'
+      );
+
+    if (currentView === 'monthly') {
+      monthlyView.classList.remove('hidden');
+      yearlyView.classList.add('hidden');
+
+      renderMonthly();
+
+    } else {
+      monthlyView.classList.add('hidden');
+      yearlyView.classList.remove('hidden');
+
+      renderYearly();
+    }
+  }
 
 
-        button.classList.toggle(
-          "open"
-        );
+  /* =========================================================
+     이벤트
+     ========================================================= */
 
+  function bindEvents() {
 
-        const arrow =
-          button.querySelector(
-            ".annual-expand-arrow"
-          );
-
-
-        if (arrow) {
-
-          arrow.textContent =
-            isOpen
-              ? "▼"
-              : "▲";
-
-        }
-
-      });
-
+    /*
+     * 금액 입력
+     */
+    [
+      'expense-amount',
+      'income-amount',
+      'goal-amount',
+      'asset-amount',
+      'forecast-income',
+      'forecast-expense'
+    ].forEach(id => {
+      bindMoneyInput(
+        document.getElementById(id)
+      );
     });
 
 
-  /* ==========================================
-     초기화
-     ========================================== */
+    /*
+     * 월/연도
+     */
+    document
+      .getElementById('year-select')
+      .addEventListener('change', event => {
+        currentYear =
+          Number(event.target.value);
 
-  updateExpenseTags();
+        renderAll();
+      });
 
-  renderMonthly();
+
+    document
+      .getElementById('month-select')
+      .addEventListener('change', event => {
+        currentMonth =
+          Number(event.target.value);
+
+        renderAll();
+      });
+
+
+    document
+      .getElementById('prev-month-btn')
+      .addEventListener(
+        'click',
+        () => moveMonth(-1)
+      );
+
+
+    document
+      .getElementById('next-month-btn')
+      .addEventListener(
+        'click',
+        () => moveMonth(1)
+      );
+
+
+    document
+      .getElementById('year-prev-btn')
+      .addEventListener(
+        'click',
+        () => {
+          currentYear--;
+          syncYearSelect();
+          renderAll();
+        }
+      );
+
+
+    document
+      .getElementById('year-next-btn')
+      .addEventListener(
+        'click',
+        () => {
+          currentYear++;
+          syncYearSelect();
+          renderAll();
+        }
+      );
+
+
+    /*
+     * 월별/연간 탭
+     */
+    document
+      .querySelectorAll('.annual-view-tab')
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          () => {
+
+            document
+              .querySelectorAll(
+                '.annual-view-tab'
+              )
+              .forEach(btn =>
+                btn.classList.remove(
+                  'active'
+                )
+              );
+
+            button.classList.add('active');
+
+            currentView =
+              button.dataset.view;
+
+            renderAll();
+          }
+        );
+      });
+
+
+    /*
+     * 지출
+     */
+    document
+      .getElementById('add-expense-btn')
+      .addEventListener(
+        'click',
+        () => openExpenseModal()
+      );
+
+
+    document
+      .getElementById('expense-form')
+      .addEventListener(
+        'submit',
+        handleExpenseSubmit
+      );
+
+
+    document
+      .getElementById('expense-category')
+      .addEventListener(
+        'change',
+        () => updateTagOptions()
+      );
+
+
+    document
+      .getElementById('expense-tag')
+      .addEventListener(
+        'change',
+        updateTagHint
+      );
+
+
+    document
+      .getElementById('expense-sort-select')
+      .addEventListener(
+        'change',
+        renderExpenseList
+      );
+
+
+    document
+      .getElementById('expense-list')
+      .addEventListener(
+        'click',
+        handleExpenseListClick
+      );
+
+
+    /*
+     * 수입
+     */
+    document
+      .getElementById('add-income-btn')
+      .addEventListener(
+        'click',
+        () => openIncomeModal()
+      );
+
+
+    document
+      .getElementById('open-income-history-btn')
+      .addEventListener(
+        'click',
+        () => {
+          renderIncomeHistory();
+          openModal(
+            'income-history-modal'
+          );
+        }
+      );
+
+
+    document
+      .getElementById('income-form')
+      .addEventListener(
+        'submit',
+        handleIncomeSubmit
+      );
+
+
+    document
+      .getElementById('income-sort-select')
+      .addEventListener(
+        'change',
+        renderIncomeHistory
+      );
+
+
+    document
+      .getElementById('income-history-list')
+      .addEventListener(
+        'click',
+        handleIncomeListClick
+      );
+
+
+    /*
+     * 목표
+     */
+    document
+      .querySelectorAll(
+        '.goal-edit-btn'
+      )
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          () =>
+            openGoalModal(
+              button.dataset.goalType
+            )
+        );
+      });
+
+
+    document
+      .getElementById('goal-form')
+      .addEventListener(
+        'submit',
+        handleGoalSubmit
+      );
+
+
+    /*
+     * 자산축적
+     */
+    document
+      .getElementById(
+        'asset-accumulation-card'
+      )
+      .addEventListener(
+        'click',
+        openAssetModal
+      );
+
+
+    document
+      .getElementById('asset-form')
+      .addEventListener(
+        'submit',
+        handleAssetSubmit
+      );
+
+
+    /*
+     * 예상
+     */
+    document
+      .getElementById('edit-forecast-btn')
+      .addEventListener(
+        'click',
+        openForecastModal
+      );
+
+
+    document
+      .getElementById('forecast-form')
+      .addEventListener(
+        'submit',
+        handleForecastSubmit
+      );
+
+
+    /*
+     * 정보 ?
+     */
+    document
+      .querySelectorAll('.info-circle')
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          event => {
+            event.stopPropagation();
+
+            openInfoModal(
+              button.dataset.info
+            );
+          }
+        );
+      });
+
+
+    /*
+     * 통계 접기/펼치기
+     */
+    document
+      .querySelectorAll(
+        '.statistics-toggle'
+      )
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          () => {
+
+            const target =
+              document.getElementById(
+                button.dataset.target
+              );
+
+            const isHidden =
+              target.classList.contains(
+                'hidden'
+              );
+
+            target.classList.toggle(
+              'hidden'
+            );
+
+            const arrow =
+              button.querySelector(
+                'span:last-child'
+              );
+
+            arrow.textContent =
+              isHidden ? '−' : '＋';
+          }
+        );
+      });
+
+
+    /*
+     * 모달 닫기
+     */
+    document
+      .querySelectorAll(
+        '[data-close-modal]'
+      )
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          () =>
+            closeModal(
+              button.dataset.closeModal
+            )
+        );
+      });
+
+
+    /*
+     * 모달 배경 클릭
+     */
+    document
+      .querySelectorAll(
+        '.annual-modal-backdrop'
+      )
+      .forEach(backdrop => {
+
+        backdrop.addEventListener(
+          'click',
+          () => {
+            closeAllModals();
+          }
+        );
+      });
+
+
+    /*
+     * ESC
+     */
+    document.addEventListener(
+      'keydown',
+      event => {
+
+        if (event.key === 'Escape') {
+          closeAllModals();
+        }
+
+      }
+    );
+
+
+    /*
+     * 삭제 확인
+     */
+    document
+      .getElementById(
+        'delete-cancel-btn'
+      )
+      .addEventListener(
+        'click',
+        () => closeModal(
+          'delete-confirm-modal'
+        )
+      );
+
+
+    document
+      .getElementById(
+        'delete-confirm-btn'
+      )
+      .addEventListener(
+        'click',
+        executeDelete
+      );
+  }
+
+
+  /* =========================================================
+     목록 클릭
+     ========================================================= */
+
+  function handleExpenseListClick(event) {
+    const button =
+      event.target.closest('button');
+
+    if (!button) return;
+
+    const id =
+      button.dataset.id;
+
+    const action =
+      button.dataset.action;
+
+    if (action === 'edit-expense') {
+      const expense =
+        data.expenses.find(
+          item => item.id === id
+        );
+
+      if (expense) {
+        openExpenseModal(expense);
+      }
+    }
+
+    if (action === 'delete-expense') {
+      askDelete('expense', id);
+    }
+  }
+
+
+  function handleIncomeListClick(event) {
+    const button =
+      event.target.closest('button');
+
+    if (!button) return;
+
+    const id =
+      button.dataset.id;
+
+    const action =
+      button.dataset.action;
+
+    if (action === 'edit-income') {
+      const income =
+        data.incomes.find(
+          item => item.id === id
+        );
+
+      if (income) {
+        openIncomeModal(income);
+      }
+    }
+
+    if (action === 'delete-income') {
+      askDelete('income', id);
+    }
+  }
+
+
+  /* =========================================================
+     월 이동
+     ========================================================= */
+
+  function moveMonth(direction) {
+    currentMonth += direction;
+
+    if (currentMonth < 1) {
+      currentMonth = 12;
+      currentYear--;
+    }
+
+    if (currentMonth > 12) {
+      currentMonth = 1;
+      currentYear++;
+    }
+
+    syncYearSelect();
+
+    document.getElementById(
+      'month-select'
+    ).value =
+      String(currentMonth);
+
+    renderAll();
+  }
+
+
+  function syncYearSelect() {
+    const select =
+      document.getElementById(
+        'year-select'
+      );
+
+    if (!select) return;
+
+    if (
+      !Array.from(select.options)
+        .some(
+          option =>
+            Number(option.value) ===
+            currentYear
+        )
+    ) {
+      const option =
+        document.createElement('option');
+
+      option.value = currentYear;
+      option.textContent =
+        `${currentYear}년`;
+
+      select.appendChild(option);
+    }
+
+    select.value =
+      String(currentYear);
+  }
+
+
+  /* =========================================================
+     유틸
+     ========================================================= */
+
+  function createId(prefix) {
+    return `${prefix}_${Date.now()}_${Math.random()
+      .toString(36)
+      .slice(2, 9)}`;
+  }
+
+
+  function escapeHtml(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+
+  init();
 
 })();
