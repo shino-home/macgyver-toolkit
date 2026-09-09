@@ -3249,3 +3249,11 @@ body.dark-theme .annual-modal-box {
   }
 
 }
+/* 연간 가계부 화면 표시 보정 */
+.annual-view {
+  display: block;
+}
+
+.annual-view.hidden {
+  display: none !important;
+}
