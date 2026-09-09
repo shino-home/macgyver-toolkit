@@ -1,48 +1,71 @@
-<section id="annual-section" class="annual-section">
+<section class="annual-module">
 
-  <!-- 상단 헤더 -->
-  <header class="annual-header">
-    <div>
-      <div class="annual-title-row">
-        <h1>연간 가계부</h1>
+  <!-- 가계부 헤더 -->
+  <div class="annual-header">
 
-        <div class="annual-view-tabs">
-          <button class="annual-view-tab active" data-view="monthly">
-            월별
-          </button>
-          <button class="annual-view-tab" data-view="yearly">
-            연간
-          </button>
-        </div>
-      </div>
-
-      <p class="annual-subtitle">
-        수입과 지출을 기록하고 한 해의 흐름을 관리합니다.
-      </p>
+    <div class="annual-title-area">
+      <h1>연간 가계부</h1>
+      <p>수입과 지출을 기록하고 한 해의 흐름을 관리합니다.</p>
     </div>
-  </header>
+
+    <div class="annual-main-tabs">
+      <button class="annual-main-tab active" data-main-tab="monthly">
+        월별
+      </button>
+      <button class="annual-main-tab" data-main-tab="yearly">
+        연간
+      </button>
+    </div>
+
+  </div>
 
 
-  <!-- =========================
+  <!-- ==================================================
        월별 화면
-       ========================= -->
-  <div id="monthly-view" class="annual-view">
+  ================================================== -->
+  <section id="monthly-view" class="annual-view">
 
-    <!-- 기간 선택 -->
-    <div class="annual-period-bar">
+    <!-- 월 선택 -->
+    <div class="annual-month-selector">
+
       <button
         type="button"
         id="prev-month-btn"
-        class="period-arrow"
-        aria-label="이전 달"
+        class="month-arrow"
+        title="이전 달"
       >
         ‹
       </button>
 
-      <div class="period-selector">
-        <select id="year-select" aria-label="연도 선택"></select>
+      <button
+        type="button"
+        id="month-picker-btn"
+        class="month-picker-button"
+      >
+        2026년 9월
+      </button>
 
-        <select id="month-select" aria-label="월 선택">
+      <button
+        type="button"
+        id="next-month-btn"
+        class="month-arrow"
+        title="다음 달"
+      >
+        ›
+      </button>
+
+    </div>
+
+
+    <!-- 월 선택 팝업 -->
+    <div id="month-picker-panel" class="month-picker-panel hidden">
+
+      <div class="month-picker-row">
+
+        <select id="picker-year">
+        </select>
+
+        <select id="picker-month">
           <option value="1">1월</option>
           <option value="2">2월</option>
           <option value="3">3월</option>
@@ -56,287 +79,345 @@
           <option value="11">11월</option>
           <option value="12">12월</option>
         </select>
-      </div>
 
-      <button
-        type="button"
-        id="next-month-btn"
-        class="period-arrow"
-        aria-label="다음 달"
-      >
-        ›
-      </button>
-    </div>
+        <button
+          type="button"
+          id="apply-month-btn"
+          class="small-primary-btn"
+        >
+          이동
+        </button>
 
-
-    <!-- 월별 요약 카드 -->
-    <div class="annual-summary-grid">
-
-      <!-- 생활비 -->
-      <div class="finance-summary-card living-card">
-        <div class="summary-card-header">
-          <div class="summary-card-title">
-            <span>생활비</span>
-            <button
-              type="button"
-              class="info-circle"
-              data-info="living"
-              aria-label="생활비 설명"
-            >
-              ?
-            </button>
-          </div>
-          <button
-            type="button"
-            class="goal-edit-btn"
-            data-goal-type="living"
-          >
-            목표 설정
-          </button>
-        </div>
-
-        <div id="monthly-living-total" class="summary-amount">
-          0원
-        </div>
-
-        <div class="summary-goal">
-          목표 <strong id="monthly-living-goal">0원</strong>
-        </div>
-      </div>
-
-
-      <!-- 고정지출 -->
-      <div class="finance-summary-card fixed-card">
-        <div class="summary-card-header">
-          <div class="summary-card-title">
-            <span>고정지출</span>
-            <button
-              type="button"
-              class="info-circle"
-              data-info="fixed"
-              aria-label="고정지출 설명"
-            >
-              ?
-            </button>
-          </div>
-          <button
-            type="button"
-            class="goal-edit-btn"
-            data-goal-type="fixed"
-          >
-            목표 설정
-          </button>
-        </div>
-
-        <div id="monthly-fixed-total" class="summary-amount">
-          0원
-        </div>
-
-        <div class="summary-goal">
-          목표 <strong id="monthly-fixed-goal">0원</strong>
-        </div>
-      </div>
-
-
-      <!-- 비정기지출 -->
-      <div class="finance-summary-card irregular-card">
-        <div class="summary-card-header">
-          <div class="summary-card-title">
-            <span>비정기지출</span>
-            <button
-              type="button"
-              class="info-circle"
-              data-info="irregular"
-              aria-label="비정기지출 설명"
-            >
-              ?
-            </button>
-          </div>
-          <button
-            type="button"
-            class="goal-edit-btn"
-            data-goal-type="prepared"
-          >
-            목표 설정
-          </button>
-        </div>
-
-        <div id="monthly-irregular-total" class="summary-amount">
-          0원
-        </div>
-
-        <div class="summary-goal">
-          준비지출 목표
-          <strong id="monthly-prepared-goal">0원</strong>
-        </div>
-      </div>
-
-
-      <!-- 자산축적 -->
-      <div
-        class="finance-summary-card asset-card asset-card-clickable"
-        id="asset-accumulation-card"
-        title="자산축적 금액 수정"
-      >
-        <div class="summary-card-header">
-          <div class="summary-card-title">
-            <span>자산축적</span>
-          </div>
-
-          <span class="asset-card-hint">수정</span>
-        </div>
-
-        <div id="monthly-asset-total" class="summary-amount">
-          0원
-        </div>
-
-        <div class="summary-goal">
-          이번 달 축적 예정
-        </div>
       </div>
 
     </div>
 
+ <!-- ==============================================
+         월별 총지출
+    =============================================== -->
+    <section class="monthly-total-expense-card">
 
-    <!-- 지출 영역 -->
-    <section class="finance-list-section">
+      <div>
+        <span class="section-eyebrow">TOTAL EXPENSE</span>
+        <h2>월별 총지출</h2>
+        <p>생활비 + 고정지출 + 준비지출 + 특별소비</p>
+      </div>
 
-      <div class="section-heading-row">
+      <strong id="monthly-total-expense">
+        0원
+      </strong>
+
+    </section>
+
+
+    <!-- ==============================================
+         월별 지출 현황
+    =============================================== -->
+    <section class="monthly-category-section">
+
+      <div class="section-title-row">
         <div>
-          <div class="section-title">
-            지출내역
+          <span class="section-eyebrow">MONTHLY SUMMARY</span>
+          <h2>지출 현황</h2>
+        </div>
+      </div>
+
+
+      <div class="monthly-category-grid">
+
+        <!-- 생활비 -->
+        <div class="monthly-category-card living-card">
+
+          <div class="category-card-top">
+            <div>
+              <span class="category-name">생활비</span>
+              <button
+                type="button"
+                class="category-help-btn"
+                data-help="living"
+                aria-label="생활비 설명"
+              >?</button>
+            </div>
           </div>
 
-          <div class="section-description">
-            생활비를 중심으로 이번 달 지출을 관리합니다.
+          <strong id="living-card-total">0원</strong>
+
+          <div class="category-goal">
+            목표 <span id="living-card-goal">1,600,000원</span>
           </div>
+
+          <div class="mini-progress">
+            <div
+              id="living-card-progress"
+              class="mini-progress-fill"
+            ></div>
+          </div>
+
+          <div
+            id="living-card-percent"
+            class="category-percent"
+          >
+            0%
+          </div>
+
         </div>
 
-        <div class="section-actions">
-          <label class="sort-control">
-            <span>정렬</span>
-            <select id="expense-sort-select">
-              <option value="date">날짜순</option>
-              <option value="input">입력순</option>
-            </select>
+
+        <!-- 고정지출 -->
+        <div class="monthly-category-card fixed-card">
+
+          <div class="category-card-top">
+            <div>
+              <span class="category-name">고정지출</span>
+              <button
+                type="button"
+                class="category-help-btn"
+                data-help="fixed"
+                aria-label="고정지출 설명"
+              >?</button>
+            </div>
+          </div>
+
+          <strong id="fixed-card-total">0원</strong>
+
+          <div class="category-goal">
+            목표 <span id="fixed-card-goal">0원</span>
+          </div>
+
+          <div class="mini-progress">
+            <div
+              id="fixed-card-progress"
+              class="mini-progress-fill"
+            ></div>
+          </div>
+
+          <div
+            id="fixed-card-percent"
+            class="category-percent"
+          >
+            0%
+          </div>
+
+        </div>
+
+
+        <!-- 준비지출 -->
+        <div class="monthly-category-card prepare-card">
+
+          <div class="category-card-top">
+            <div>
+              <span class="category-name">준비지출</span>
+              <button
+                type="button"
+                class="category-help-btn"
+                data-help="prepare"
+                aria-label="준비지출 설명"
+              >?</button>
+            </div>
+          </div>
+
+          <strong id="prepare-card-total">0원</strong>
+
+          <div class="category-goal">
+            연 목표
+            <span id="prepare-card-goal">2,400,000원</span>
+          </div>
+
+          <div class="mini-progress">
+            <div
+              id="prepare-card-progress"
+              class="mini-progress-fill"
+            ></div>
+          </div>
+
+          <div
+            id="prepare-card-percent"
+            class="category-percent"
+          >
+            연 누적 0%
+          </div>
+
+        </div>
+
+
+        <!-- 특별소비 -->
+        <div class="monthly-category-card special-card">
+
+          <div class="category-card-top">
+            <div>
+              <span class="category-name">특별소비</span>
+              <button
+                type="button"
+                class="category-help-btn"
+                data-help="special"
+                aria-label="특별소비 설명"
+              >?</button>
+            </div>
+          </div>
+
+          <strong id="special-card-total">0원</strong>
+
+          <div class="category-goal no-goal">
+            목표 없음
+          </div>
+
+          <div class="special-description">
+            선물·여행·대형수리 등 큰 지출
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+   
+
+    <!-- ==============================================
+         입력 버튼 영역
+    =============================================== -->
+    <section class="monthly-action-section">
+
+      <div class="expense-main-action">
+        <button
+          type="button"
+          id="add-expense-btn"
+          class="expense-add-button"
+        >
+          <span>＋</span>
+          <div>
+            <strong>지출 추가</strong>
+            <small>새로운 지출을 기록합니다</small>
+          </div>
+        </button>
+      </div>
+
+
+      <div class="income-action-area">
+
+        <button
+          type="button"
+          id="add-income-btn"
+          class="income-add-button"
+        >
+          ＋ 수입 추가
+        </button>
+
+        <button
+          type="button"
+          id="income-history-btn"
+          class="income-history-button"
+        >
+          수입내역
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ==============================================
+         지출 내역
+    =============================================== -->
+    <section class="expense-list-section">
+
+      <div class="section-title-row expense-list-header">
+
+        <div>
+          <span class="section-eyebrow">EXPENSE HISTORY</span>
+          <h2>지출내역</h2>
+        </div>
+
+        <div class="sort-area">
+
+          <label for="expense-sort-select">
+            정렬
           </label>
 
-          <button
-            type="button"
-            id="add-expense-btn"
-            class="finance-primary-btn"
-          >
-            ＋ 지출 추가
-          </button>
+          <select id="expense-sort-select">
+            <option value="date-desc">날짜순</option>
+            <option value="input-desc">입력순</option>
+          </select>
+
         </div>
+
       </div>
 
-      <div id="expense-list" class="finance-record-list">
-        <!-- JS -->
-      </div>
 
-    </section>
-
-
-    <!-- 수입 영역 -->
-    <section class="income-mini-section">
-
-      <div class="income-mini-title">
-        <div>
-          <div class="section-title small">
-            수입
-          </div>
-          <div class="section-description">
-            필요할 때 수입을 기록하고 확인합니다.
-          </div>
-        </div>
-
-        <div class="income-mini-actions">
-          <button
-            type="button"
-            id="add-income-btn"
-            class="finance-secondary-btn"
-          >
-            ＋ 수입 추가
-          </button>
-
-          <button
-            type="button"
-            id="open-income-history-btn"
-            class="finance-secondary-btn"
-          >
-            수입 내역
-          </button>
-        </div>
+      <div id="expense-list" class="expense-list">
+        <!-- JS 렌더링 -->
       </div>
 
     </section>
 
-  </div>
+  </section>
 
 
-  <!-- =========================
+  <!-- ==================================================
        연간 화면
-       ========================= -->
-  <div id="yearly-view" class="annual-view hidden">
+  ================================================== -->
+  <section id="yearly-view" class="annual-view hidden">
 
-    <div class="yearly-period-bar">
+    <div class="year-selector">
+
       <button
         type="button"
-        id="year-prev-btn"
-        class="period-arrow"
+        id="prev-year-btn"
+        class="month-arrow"
       >
         ‹
       </button>
 
-      <div class="yearly-year" id="yearly-year">
+      <strong id="year-title">
         2026년
-      </div>
+      </strong>
 
       <button
         type="button"
-        id="year-next-btn"
-        class="period-arrow"
+        id="next-year-btn"
+        class="month-arrow"
       >
         ›
       </button>
-    </div>
-
-
-    <!-- 연간 핵심 -->
-    <div class="yearly-main-grid">
-
-      <div class="yearly-total-card income-total-card">
-        <span class="yearly-total-label">총수입</span>
-        <strong id="yearly-income-total">0원</strong>
-      </div>
-
-      <div class="yearly-total-card expense-total-card">
-        <span class="yearly-total-label">총지출</span>
-        <strong id="yearly-expense-total">0원</strong>
-      </div>
-
-      <div class="yearly-total-card balance-total-card">
-        <span class="yearly-total-label">현재잔액</span>
-        <strong id="yearly-balance-total">0원</strong>
-      </div>
 
     </div>
 
 
-    <!-- 예상 -->
-    <div class="yearly-forecast-card">
+    <!-- 연간 핵심 숫자 -->
+    <section class="yearly-total-grid">
 
-      <div class="yearly-card-header">
+      <div class="yearly-total-card income">
+        <span>총수입</span>
+        <strong id="year-total-income">0원</strong>
+      </div>
+
+      <div class="yearly-total-card expense">
+        <span>총지출</span>
+        <strong id="year-total-expense">0원</strong>
+      </div>
+
+      <div class="yearly-total-card balance">
+        <span>현재잔액</span>
+        <strong id="year-balance">0원</strong>
+      </div>
+
+    </section>
+
+
+    <!-- 예상값 -->
+    <section class="yearly-forecast-card">
+
+      <div class="forecast-title">
         <div>
-          <h2>연간 예상</h2>
-          <p>올해의 예상 수입과 지출을 직접 설정할 수 있습니다.</p>
+          <span class="section-eyebrow">FORECAST</span>
+          <h2>예상 금액</h2>
         </div>
 
         <button
           type="button"
           id="edit-forecast-btn"
-          class="small-outline-btn"
+          class="small-action-btn"
         >
           수정
         </button>
@@ -344,214 +425,242 @@
 
       <div class="forecast-grid">
 
-        <div class="forecast-item">
+        <div>
           <span>예상 수입</span>
-          <strong id="yearly-forecast-income">0원</strong>
+          <strong id="forecast-income">0원</strong>
         </div>
 
-        <div class="forecast-item">
+        <div>
           <span>예상 지출</span>
-          <strong id="yearly-forecast-expense">0원</strong>
+          <strong id="forecast-expense">0원</strong>
         </div>
 
       </div>
 
-    </div>
+    </section>
 
 
-    <!-- 연간 지출 구성 -->
-    <div class="yearly-category-grid">
+    <!-- 연간 카테고리 -->
+    <section class="yearly-category-section">
 
-      <div class="yearly-category-card">
-        <span>생활비</span>
-        <strong id="yearly-living-total">0원</strong>
+      <div class="section-title-row">
+        <div>
+          <span class="section-eyebrow">YEARLY SUMMARY</span>
+          <h2>연간 지출 현황</h2>
+        </div>
       </div>
 
-      <div class="yearly-category-card">
-        <span>고정지출</span>
-        <strong id="yearly-fixed-total">0원</strong>
+
+      <div class="yearly-category-grid">
+
+        <div class="yearly-category-card">
+          <span>생활비</span>
+          <strong id="year-living-total">0원</strong>
+          <small>
+            목표 <span id="year-living-goal">19,200,000원</span>
+          </small>
+          <div class="mini-progress">
+            <div id="year-living-progress" class="mini-progress-fill"></div>
+          </div>
+          <em id="year-living-percent">0%</em>
+        </div>
+
+
+        <div class="yearly-category-card">
+          <span>고정지출</span>
+          <strong id="year-fixed-total">0원</strong>
+          <small>
+            목표 <span id="year-fixed-goal">0원</span>
+          </small>
+          <div class="mini-progress">
+            <div id="year-fixed-progress" class="mini-progress-fill"></div>
+          </div>
+          <em id="year-fixed-percent">0%</em>
+        </div>
+
+
+        <div class="yearly-category-card">
+          <span>준비지출</span>
+          <strong id="year-prepare-total">0원</strong>
+          <small>
+            목표 <span id="year-prepare-goal">2,400,000원</span>
+          </small>
+          <div class="mini-progress">
+            <div id="year-prepare-progress" class="mini-progress-fill"></div>
+          </div>
+          <em id="year-prepare-percent">0%</em>
+        </div>
+
+
+        <div class="yearly-category-card">
+          <span>특별소비</span>
+          <strong id="year-special-total">0원</strong>
+          <small>목표 없음</small>
+          <div class="special-description">
+            계획하지 않은 큰 지출
+          </div>
+        </div>
+
       </div>
 
-      <div class="yearly-category-card">
-        <span>준비지출</span>
-        <strong id="yearly-prepared-total">0원</strong>
-      </div>
-
-      <div class="yearly-category-card">
-        <span>특별소비</span>
-        <strong id="yearly-special-total">0원</strong>
-      </div>
-
-      <div class="yearly-category-card asset-yearly-card">
-        <span>자산축적</span>
-        <strong id="yearly-asset-total">0원</strong>
-      </div>
-
-    </div>
+    </section>
 
 
     <!-- 태그 통계 -->
-    <div class="statistics-section">
+    <section class="yearly-expand-section">
 
       <button
         type="button"
-        class="statistics-toggle"
-        data-target="tag-statistics"
+        class="expand-section-btn"
+        data-expand-target="tag-statistics"
       >
         <span>태그별 통계</span>
-        <span>＋</span>
+        <span>⌄</span>
       </button>
 
       <div
         id="tag-statistics"
-        class="statistics-content hidden"
+        class="expand-content hidden"
       >
-        <!-- JS -->
+        <div id="tag-statistics-list"></div>
       </div>
 
-    </div>
+    </section>
 
 
     <!-- 월별 통계 -->
-    <div class="statistics-section">
+    <section class="yearly-expand-section">
 
       <button
         type="button"
-        class="statistics-toggle"
-        data-target="month-statistics"
+        class="expand-section-btn"
+        data-expand-target="monthly-statistics"
       >
         <span>월별 통계</span>
-        <span>＋</span>
+        <span>⌄</span>
       </button>
 
       <div
-        id="month-statistics"
-        class="statistics-content hidden"
+        id="monthly-statistics"
+        class="expand-content hidden"
       >
-        <!-- JS -->
+        <div id="monthly-statistics-list"></div>
       </div>
 
-    </div>
+    </section>
 
-  </div>
-
-
-  <!-- =========================
-       공통 정보 팝업
-       ========================= -->
-  <div id="annual-info-modal" class="annual-modal hidden">
-    <div class="annual-modal-backdrop"></div>
-
-    <div class="annual-modal-box info-modal-box">
-
-      <div class="annual-modal-header">
-        <h3 id="info-modal-title">생활비</h3>
-        <button
-          type="button"
-          class="annual-modal-close"
-          data-close-modal="annual-info-modal"
-        >
-          ×
-        </button>
-      </div>
-
-      <div id="info-modal-content" class="info-modal-content">
-      </div>
-
-    </div>
-  </div>
+  </section>
 
 
-  <!-- =========================
+  <!-- ==================================================
        지출 추가 / 수정 팝업
-       ========================= -->
+  ================================================== -->
   <div id="expense-modal" class="annual-modal hidden">
+
     <div class="annual-modal-backdrop"></div>
 
     <div class="annual-modal-box">
 
       <div class="annual-modal-header">
-        <h3 id="expense-modal-title">지출 추가</h3>
+        <h2 id="expense-modal-title">지출 추가</h2>
 
         <button
           type="button"
-          class="annual-modal-close"
+          class="modal-close-btn"
           data-close-modal="expense-modal"
         >
           ×
         </button>
       </div>
 
+
       <form id="expense-form">
 
-        <input type="hidden" id="expense-edit-id">
+        <input
+          type="hidden"
+          id="expense-edit-id"
+        >
 
-        <div class="annual-form-group">
-          <label for="expense-date">날짜</label>
+        <label>
+          날짜
           <input
             type="date"
             id="expense-date"
             required
           >
-        </div>
+        </label>
 
-        <div class="annual-form-group">
-          <label for="expense-description">내용</label>
+
+        <label>
+          내용
           <input
             type="text"
-            id="expense-description"
-            placeholder="예: 점심, 장보기, 선물"
-            maxlength="100"
+            id="expense-content"
+            placeholder="예: 점심 식사"
             required
           >
-        </div>
+        </label>
 
-        <div class="annual-form-group">
-          <label for="expense-amount">금액</label>
+
+        <label>
+          금액
           <input
             type="text"
             id="expense-amount"
             inputmode="numeric"
-            autocomplete="off"
             placeholder="0"
             required
           >
-        </div>
+        </label>
 
-        <div class="annual-form-group">
-          <label for="expense-category">카테고리</label>
+
+        <label>
+          카테고리
           <select id="expense-category" required>
-            <option value="living">생활비</option>
-            <option value="fixed">고정지출</option>
-            <option value="irregular">비정기지출</option>
+            <option value="생활비">생활비</option>
+            <option value="고정지출">고정지출</option>
+            <option value="준비지출">준비지출</option>
+            <option value="특별소비">특별소비</option>
           </select>
-        </div>
+        </label>
 
-        <div class="annual-form-group">
-          <label for="expense-tag">태그</label>
-          <select id="expense-tag" required>
+
+        <label>
+          태그
+          <select id="expense-tag">
           </select>
-        </div>
+        </label>
 
-        <div class="form-tag-hint" id="expense-tag-hint">
-        </div>
 
-        <button
-          type="submit"
-          class="modal-submit-btn"
-        >
-          저장
-        </button>
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            class="modal-cancel-btn"
+            data-close-modal="expense-modal"
+          >
+            취소
+          </button>
+
+          <button
+            type="submit"
+            class="modal-submit-btn"
+          >
+            저장
+          </button>
+
+        </div>
 
       </form>
 
     </div>
+
   </div>
 
 
-  <!-- =========================
+  <!-- ==================================================
        수입 추가 / 수정 팝업
-       ========================= -->
+  ================================================== -->
   <div id="income-modal" class="annual-modal hidden">
 
     <div class="annual-modal-backdrop"></div>
@@ -559,98 +668,113 @@
     <div class="annual-modal-box">
 
       <div class="annual-modal-header">
-        <h3 id="income-modal-title">수입 추가</h3>
+        <h2 id="income-modal-title">수입 추가</h2>
 
         <button
           type="button"
-          class="annual-modal-close"
+          class="modal-close-btn"
           data-close-modal="income-modal"
         >
           ×
         </button>
       </div>
 
+
       <form id="income-form">
 
-        <input type="hidden" id="income-edit-id">
+        <input
+          type="hidden"
+          id="income-edit-id"
+        >
 
-        <div class="annual-form-group">
-          <label for="income-date">날짜</label>
+        <label>
+          날짜
           <input
             type="date"
             id="income-date"
             required
           >
-        </div>
+        </label>
 
-        <div class="annual-form-group">
-          <label for="income-description">내용</label>
+
+        <label>
+          내용
           <input
             type="text"
-            id="income-description"
-            placeholder="예: 9월 월급, 수당"
-            maxlength="100"
+            id="income-content"
+            placeholder="예: 9월 수당"
             required
           >
-        </div>
+        </label>
 
-        <div class="annual-form-group">
-          <label for="income-amount">금액</label>
+
+        <label>
+          금액
           <input
             type="text"
             id="income-amount"
             inputmode="numeric"
-            autocomplete="off"
             placeholder="0"
             required
           >
-        </div>
+        </label>
 
-        <div class="annual-form-group">
-          <label for="income-category">수입 종류</label>
-          <select id="income-category" required>
-            <option value="allowance">수당</option>
-            <option value="salary">월급</option>
-            <option value="bonus">보너스</option>
+
+        <label>
+          수입 구분
+          <select id="income-category">
+            <option value="수당">수당</option>
+            <option value="월급">월급</option>
+            <option value="보너스">보너스</option>
           </select>
-        </div>
+        </label>
 
-        <button
-          type="submit"
-          class="modal-submit-btn"
-        >
-          저장
-        </button>
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            class="modal-cancel-btn"
+            data-close-modal="income-modal"
+          >
+            취소
+          </button>
+
+          <button
+            type="submit"
+            class="modal-submit-btn"
+          >
+            저장
+          </button>
+
+        </div>
 
       </form>
 
     </div>
+
   </div>
 
 
-  <!-- =========================
+  <!-- ==================================================
        수입 내역 팝업
-       ========================= -->
+  ================================================== -->
   <div id="income-history-modal" class="annual-modal hidden">
 
     <div class="annual-modal-backdrop"></div>
 
-    <div class="annual-modal-box large-modal-box">
+    <div class="annual-modal-box wide-modal">
 
       <div class="annual-modal-header">
 
         <div>
-          <h3 id="income-history-title">
-            9월 수입 내역
-          </h3>
-          <p class="modal-sub-description">
-            수입을 수정하거나 삭제할 수 있습니다.
-          </p>
+          <h2>수입내역</h2>
+          <p id="income-history-period"></p>
         </div>
 
         <button
           type="button"
-          class="annual-modal-close"
+          class="modal-close-btn"
           data-close-modal="income-history-modal"
         >
           ×
@@ -658,19 +782,7 @@
 
       </div>
 
-      <div class="modal-list-toolbar">
-
-        <label class="sort-control">
-          <span>정렬</span>
-          <select id="income-sort-select">
-            <option value="date">날짜순</option>
-            <option value="input">입력순</option>
-          </select>
-        </label>
-
-      </div>
-
-      <div id="income-history-list" class="finance-record-list modal-record-list">
+      <div id="income-history-list" class="income-history-list">
       </div>
 
     </div>
@@ -678,9 +790,9 @@
   </div>
 
 
-  <!-- =========================
-       목표금액 수정 팝업
-       ========================= -->
+  <!-- ==================================================
+       목표금액 팝업
+  ================================================== -->
   <div id="goal-modal" class="annual-modal hidden">
 
     <div class="annual-modal-backdrop"></div>
@@ -688,109 +800,68 @@
     <div class="annual-modal-box">
 
       <div class="annual-modal-header">
-        <h3 id="goal-modal-title">목표금액 설정</h3>
+
+        <h2>목표금액 설정</h2>
 
         <button
           type="button"
-          class="annual-modal-close"
+          class="modal-close-btn"
           data-close-modal="goal-modal"
         >
           ×
         </button>
+
       </div>
+
 
       <form id="goal-form">
 
-        <input type="hidden" id="goal-type">
+        <label>
+          항목
+          <select id="goal-category">
+            <option value="생활비">생활비</option>
+            <option value="고정지출">고정지출</option>
+            <option value="준비지출">준비지출</option>
+          </select>
+        </label>
 
-        <div class="goal-modal-description" id="goal-modal-description">
-          이 달부터 이후 달에 적용됩니다.
-        </div>
 
-        <div class="annual-form-group">
-          <label for="goal-amount">목표금액</label>
-
+        <label>
+          목표 금액
           <input
             type="text"
             id="goal-amount"
             inputmode="numeric"
-            autocomplete="off"
             placeholder="0"
             required
           >
-        </div>
-
-        <button
-          type="submit"
-          class="modal-submit-btn"
-        >
-          저장
-        </button>
-
-      </form>
-
-    </div>
-
-  </div>
+        </label>
 
 
-  <!-- =========================
-       자산축적 수정 팝업
-       ========================= -->
-  <div id="asset-modal" class="annual-modal hidden">
+        <p class="goal-modal-help">
+          수정한 달부터 이후 월에도 적용됩니다.
+          이전 월의 목표에는 영향을 주지 않습니다.
+        </p>
 
-    <div class="annual-modal-backdrop"></div>
 
-    <div class="annual-modal-box">
+        <div class="modal-actions">
 
-      <div class="annual-modal-header">
-
-        <div>
-          <h3>자산축적 금액</h3>
-          <p class="modal-sub-description">
-            이 달부터 이후 달에 적용됩니다.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          class="annual-modal-close"
-          data-close-modal="asset-modal"
-        >
-          ×
-        </button>
-
-      </div>
-
-      <form id="asset-form">
-
-        <div class="annual-form-group">
-
-          <label for="asset-amount">
-            매월 자산축적 금액
-          </label>
-
-          <input
-            type="text"
-            id="asset-amount"
-            inputmode="numeric"
-            autocomplete="off"
-            placeholder="800,000"
-            required
+          <button
+            type="button"
+            class="modal-cancel-btn"
+            data-close-modal="goal-modal"
           >
+            취소
+          </button>
 
-          <div class="form-help-text">
-            예: 행정공제 20만원 + 부채상환 60만원 = 월 80만원
-          </div>
+          <button
+            type="submit"
+            class="modal-submit-btn"
+          >
+            저장
+          </button>
 
         </div>
-
-        <button
-          type="submit"
-          class="modal-submit-btn"
-        >
-          저장
-        </button>
 
       </form>
 
@@ -799,9 +870,9 @@
   </div>
 
 
-  <!-- =========================
-       연간 예상금액 수정
-       ========================= -->
+  <!-- ==================================================
+       예상금액 팝업
+  ================================================== -->
   <div id="forecast-modal" class="annual-modal hidden">
 
     <div class="annual-modal-backdrop"></div>
@@ -810,11 +881,11 @@
 
       <div class="annual-modal-header">
 
-        <h3>연간 예상금액</h3>
+        <h2>예상 금액 수정</h2>
 
         <button
           type="button"
-          class="annual-modal-close"
+          class="modal-close-btn"
           data-close-modal="forecast-modal"
         >
           ×
@@ -822,44 +893,47 @@
 
       </div>
 
+
       <form id="forecast-form">
 
-        <div class="annual-form-group">
-          <label for="forecast-income">
-            예상 수입
-          </label>
-
+        <label>
+          예상 수입
           <input
             type="text"
-            id="forecast-income"
+            id="forecast-income-input"
             inputmode="numeric"
-            autocomplete="off"
-            placeholder="0"
-            required
           >
-        </div>
+        </label>
 
-        <div class="annual-form-group">
-          <label for="forecast-expense">
-            예상 지출
-          </label>
 
+        <label>
+          예상 지출
           <input
             type="text"
-            id="forecast-expense"
+            id="forecast-expense-input"
             inputmode="numeric"
-            autocomplete="off"
-            placeholder="0"
-            required
           >
-        </div>
+        </label>
 
-        <button
-          type="submit"
-          class="modal-submit-btn"
-        >
-          저장
-        </button>
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            class="modal-cancel-btn"
+            data-close-modal="forecast-modal"
+          >
+            취소
+          </button>
+
+          <button
+            type="submit"
+            class="modal-submit-btn"
+          >
+            저장
+          </button>
+
+        </div>
 
       </form>
 
@@ -868,45 +942,34 @@
   </div>
 
 
-  <!-- 삭제 확인 -->
-  <div id="delete-confirm-modal" class="annual-modal hidden">
+  <!-- ==================================================
+       설명 팝업
+  ================================================== -->
+  <div id="help-modal" class="annual-modal hidden">
 
     <div class="annual-modal-backdrop"></div>
 
-    <div class="annual-modal-box delete-confirm-box">
+    <div class="annual-modal-box help-modal-box">
 
-      <div class="delete-confirm-icon">
-        !
-      </div>
+      <div class="annual-modal-header">
 
-      <h3>내역을 삭제할까요?</h3>
-
-      <p>
-        삭제한 내역은 되돌릴 수 없습니다.
-      </p>
-
-      <div class="delete-confirm-actions">
+        <h2 id="help-modal-title">항목 설명</h2>
 
         <button
           type="button"
-          id="delete-cancel-btn"
-          class="finance-secondary-btn"
+          class="modal-close-btn"
+          data-close-modal="help-modal"
         >
-          취소
-        </button>
-
-        <button
-          type="button"
-          id="delete-confirm-btn"
-          class="delete-confirm-btn"
-        >
-          삭제
+          ×
         </button>
 
       </div>
+
+      <p id="help-modal-content"></p>
 
     </div>
 
   </div>
+
 
 </section>
