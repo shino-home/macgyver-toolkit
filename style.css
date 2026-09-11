@@ -4332,3 +4332,12 @@ body.dark-theme .annual-modal-box {
   word-break: keep-all;
   writing-mode: horizontal-tb;
 }
+/* ==================================================
+   연간 가계부 - 클라우드 상태
+   ================================================== */
+
+.household-cloud-status {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #777;
+}

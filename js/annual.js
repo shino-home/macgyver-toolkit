@@ -38,7 +38,10 @@
 
   let currentMainTab = 'monthly';
 
-  let state = loadState();
+let state = defaultState();
+
+let cloudSync = null;
+let cloudSyncInitialized = false;
 
 
   /* ==================================================
@@ -47,17 +50,128 @@
 
   init();
 
+async function init() {
 
-  function init() {
+  ensureState();
 
-    ensureState();
+  bindEvents();
 
-    bindEvents();
+  renderAll();
 
-    renderAll();
+  await initializeCloudSync();
+
+}
+async function initializeCloudSync() {
+
+  try {
+
+    cloudSync =
+      await import('./household-sync.js');
+
+
+    const result =
+      await cloudSync.loadHouseholdState();
+
+
+    // 로그인하지 않은 경우
+    if (!result.loggedIn) {
+
+      updateCloudStatus('로그인 필요');
+
+      return;
+
+    }
+
+
+    // ==========================================
+    // Firebase에 가계부가 아직 없는 경우
+    // → 새 가계부 생성
+    // ==========================================
+
+    if (!result.exists) {
+
+      state = defaultState();
+
+      ensureState();
+
+      cloudSyncInitialized = true;
+
+      const saveResult =
+        await cloudSync.saveHouseholdState(state);
+
+
+      if (saveResult.success) {
+
+        updateCloudStatus('클라우드 가계부 생성됨');
+
+      } else {
+
+        updateCloudStatus('클라우드 저장 실패');
+
+      }
+
+    }
+
+
+    // ==========================================
+    // Firebase에 기존 가계부가 있는 경우
+    // ==========================================
+
+    else {
+
+      if (result.state) {
+
+        state = result.state;
+
+        ensureState();
+
+        renderAll();
+
+      }
+
+      cloudSyncInitialized = true;
+
+      updateCloudStatus('클라우드 동기화됨');
+
+    }
+
+
+    // ==========================================
+    // 다른 기기의 변경사항 실시간 반영
+    // ==========================================
+
+    await cloudSync.watchHouseholdState(
+      remoteState => {
+
+        if (!remoteState) {
+          return;
+        }
+
+
+        state = remoteState;
+
+        ensureState();
+
+        renderAll();
+
+        updateCloudStatus('클라우드 동기화됨');
+
+      }
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      '가계부 클라우드 동기화 초기화 실패:',
+      error
+    );
+
+    updateCloudStatus('클라우드 연결 확인 필요');
 
   }
 
+}
 
   /* ==================================================
      데이터
@@ -226,24 +340,51 @@
     saveState();
 
   }
+function updateCloudStatus(message) {
+
+  const element =
+    document.getElementById(
+      'household-cloud-status'
+    );
+
+  if (element) {
+    element.textContent = message;
+  }
+
+}
+
+function saveState() {
+
+  if (!cloudSyncInitialized || !cloudSync) {
+    return;
+  }
 
 
-  function saveState() {
+  cloudSync
+    .saveHouseholdState(state)
 
-    try {
+    .then(result => {
 
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(state)
+      if (result.success) {
+
+        updateCloudStatus('클라우드 저장됨');
+
+      }
+
+    })
+
+    .catch(error => {
+
+      console.error(
+        '클라우드 저장 실패:',
+        error
       );
 
-    } catch (error) {
+      updateCloudStatus('클라우드 저장 실패');
 
-      console.error('가계부 데이터 저장 실패:', error);
+    });
 
-    }
-
-  }
+}
 
 
   /* ==================================================
