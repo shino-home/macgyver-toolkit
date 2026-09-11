@@ -4245,3 +4245,90 @@ body.dark-theme .annual-modal-box {
   }
 
 }
+/* ==================================================
+   연간 가계부 - 목표 카드 클릭
+   ================================================== */
+
+.monthly-category-card.living-card,
+.monthly-category-card.fixed-card,
+.monthly-category-card.prepare-card {
+  cursor: pointer;
+}
+
+.monthly-category-card.living-card:hover,
+.monthly-category-card.fixed-card:hover,
+.monthly-category-card.prepare-card:hover {
+  transform: translateY(-2px);
+}
+
+
+/* ==================================================
+   지출 팝업 버튼
+   저장 = 왼쪽 / 취소 = 오른쪽
+   ================================================== */
+
+#expense-modal .modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+#expense-modal .modal-submit-btn {
+  order: 1;
+  flex: 1;
+  min-width: 0;
+}
+
+#expense-modal .modal-cancel-btn {
+  order: 2;
+  flex: 0 0 90px;
+  width: 90px;
+  min-width: 90px;
+  padding: 12px 8px;
+  white-space: nowrap;
+  word-break: keep-all;
+  writing-mode: horizontal-tb;
+}/* ==================================================
+   연간 가계부 - 목표 카드 클릭
+   ================================================== */
+
+.monthly-category-card.living-card,
+.monthly-category-card.fixed-card,
+.monthly-category-card.prepare-card {
+  cursor: pointer;
+}
+
+.monthly-category-card.living-card:hover,
+.monthly-category-card.fixed-card:hover,
+.monthly-category-card.prepare-card:hover {
+  transform: translateY(-2px);
+}
+
+
+/* ==================================================
+   지출 팝업 버튼
+   저장 = 왼쪽 / 취소 = 오른쪽
+   ================================================== */
+
+#expense-modal .modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+#expense-modal .modal-submit-btn {
+  order: 1;
+  flex: 1;
+  min-width: 0;
+}
+
+#expense-modal .modal-cancel-btn {
+  order: 2;
+  flex: 0 0 90px;
+  width: 90px;
+  min-width: 90px;
+  padding: 12px 8px;
+  white-space: nowrap;
+  word-break: keep-all;
+  writing-mode: horizontal-tb;
+}

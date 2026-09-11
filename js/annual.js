@@ -520,7 +520,33 @@
         });
 
       });
+/* 목표 수정 - 생활비 / 고정지출 / 준비지출 카드 클릭 */
 
+document.querySelectorAll('.monthly-category-card')
+  .forEach(card => {
+
+    card.addEventListener('click', event => {
+
+      /* 카드 안의 ? 설명 버튼을 누른 경우에는 목표 팝업을 열지 않는다. */
+      if (event.target.closest('.category-help-btn')) return;
+
+      if (card.classList.contains('living-card')) {
+        openGoalModal('생활비');
+        return;
+      }
+
+      if (card.classList.contains('fixed-card')) {
+        openGoalModal('고정지출');
+        return;
+      }
+
+      if (card.classList.contains('prepare-card')) {
+        openGoalModal('준비지출');
+      }
+
+    });
+
+  });
 
     /* 통계 펼치기 */
 
@@ -1913,7 +1939,10 @@
         todayString();
 
     }
-
+/* 수입내역에서 수정할 때는 수입내역 팝업을 먼저 닫는다. */
+if (id) {
+  closeModal('income-history-modal');
+}
 
     openModal('income-modal');
 
