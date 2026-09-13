@@ -16,15 +16,9 @@ import {
 
 function createAuthUI() {
 
-  // 이미 만들어져 있으면 다시 만들지 않는다.
   if (document.getElementById("auth-ui")) {
     return;
   }
-
-
-  // ----------------------------------------
-  // 스타일
-  // ----------------------------------------
 
   const style = document.createElement("style");
 
@@ -38,34 +32,79 @@ function createAuthUI() {
     }
 
     #auth-user-area {
+      position: relative;
       display: flex;
       align-items: center;
-      gap: 8px;
-    }
-
-    .auth-status {
-      font-size: 13px;
-      color: #555;
-    }
-
-    .auth-open-btn,
-    .auth-logout-btn {
-      border: none;
-      border-radius: 10px;
-      padding: 9px 14px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
     }
 
     .auth-open-btn {
-      background: #222;
-      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 11px;
+      padding: 9px 13px;
+      background: #ffffff;
+      color: #333;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .auth-open-btn.logged-in {
+      background: #ffffff;
+      color: #333;
+    }
+
+    .auth-account-arrow {
+      font-size: 11px;
+      transition: transform 0.15s ease;
+    }
+
+    .auth-open-btn.dropdown-open .auth-account-arrow {
+      transform: rotate(180deg);
+    }
+
+    .auth-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 210px;
+      padding: 7px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 13px;
+      background: #ffffff;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.13);
+    }
+
+    .auth-dropdown.hidden {
+      display: none;
+    }
+
+    .auth-email {
+      padding: 10px 11px 9px;
+      color: #666;
+      font-size: 12px;
+      line-height: 1.4;
+      word-break: break-all;
     }
 
     .auth-logout-btn {
-      background: #eeeeee;
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 11px;
+      background: #f3f4f5;
       color: #333;
+      text-align: left;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .auth-logout-btn:hover {
+      background: #e9eaec;
     }
 
     #auth-modal {
@@ -130,6 +169,11 @@ function createAuthUI() {
       margin-top: 4px;
     }
 
+    .auth-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
     .auth-switch-btn {
       width: 100%;
       border: none;
@@ -160,13 +204,7 @@ function createAuthUI() {
 
   document.head.appendChild(style);
 
-
-  // ----------------------------------------
-  // 로그인 버튼 영역
-  // ----------------------------------------
-
   const authUI = document.createElement("div");
-
   authUI.id = "auth-ui";
 
   authUI.innerHTML = `
@@ -174,19 +212,34 @@ function createAuthUI() {
       <button
         type="button"
         class="auth-open-btn"
-        id="auth-open-btn">
+        id="auth-open-btn"
+        aria-expanded="false"
+      >
         로그인
       </button>
+
+      <div
+        class="auth-dropdown hidden"
+        id="auth-dropdown"
+      >
+        <div class="auth-email" id="auth-email-display"></div>
+        <button
+          type="button"
+          class="auth-logout-btn"
+          id="auth-logout-btn"
+        >
+          로그아웃
+        </button>
+      </div>
     </div>
 
     <div id="auth-modal">
-
       <div class="auth-box">
-
         <button
           type="button"
           class="auth-close-btn"
-          id="auth-close-btn">
+          id="auth-close-btn"
+        >
           ×
         </button>
 
@@ -197,7 +250,6 @@ function createAuthUI() {
         </p>
 
         <form id="auth-form">
-
           <input
             type="email"
             id="auth-email"
@@ -219,220 +271,190 @@ function createAuthUI() {
           <button
             type="submit"
             class="auth-submit-btn"
-            id="auth-submit-btn">
+            id="auth-submit-btn"
+          >
             로그인
           </button>
-
         </form>
 
         <button
           type="button"
           class="auth-switch-btn"
-          id="auth-switch-btn">
+          id="auth-switch-btn"
+        >
           계정이 없나요? 회원가입
         </button>
 
         <div
           class="auth-message"
-          id="auth-message">
-        </div>
-
+          id="auth-message"
+        ></div>
       </div>
-
     </div>
   `;
 
   document.body.appendChild(authUI);
 
-
-  // ----------------------------------------
-  // 요소 가져오기
-  // ----------------------------------------
-
   const modal = document.getElementById("auth-modal");
   const openBtn = document.getElementById("auth-open-btn");
   const closeBtn = document.getElementById("auth-close-btn");
+  const dropdown = document.getElementById("auth-dropdown");
+  const emailDisplay = document.getElementById("auth-email-display");
+  const logoutBtn = document.getElementById("auth-logout-btn");
 
   const form = document.getElementById("auth-form");
-
   const title = document.getElementById("auth-title");
   const submitBtn = document.getElementById("auth-submit-btn");
   const switchBtn = document.getElementById("auth-switch-btn");
-
   const emailInput = document.getElementById("auth-email");
   const passwordInput = document.getElementById("auth-password");
-
   const message = document.getElementById("auth-message");
 
-
   let isSignUpMode = false;
+  let currentUser = null;
 
+  function closeDropdown() {
+    dropdown.classList.add("hidden");
+    openBtn.classList.remove("dropdown-open");
+    openBtn.setAttribute("aria-expanded", "false");
+  }
 
-  // ----------------------------------------
-  // 로그인 팝업 열기
-  // ----------------------------------------
+  function openLoginModal() {
+    closeDropdown();
+    modal.classList.add("show");
+    emailInput.focus();
+  }
 
   openBtn.addEventListener("click", () => {
+    if (!currentUser) {
+      openLoginModal();
+      return;
+    }
 
-    modal.classList.add("show");
+    const isOpen = !dropdown.classList.contains("hidden");
 
-    emailInput.focus();
-
+    if (isOpen) {
+      closeDropdown();
+    } else {
+      dropdown.classList.remove("hidden");
+      openBtn.classList.add("dropdown-open");
+      openBtn.setAttribute("aria-expanded", "true");
+    }
   });
-
-
-  // ----------------------------------------
-  // 로그인 팝업 닫기
-  // ----------------------------------------
 
   closeBtn.addEventListener("click", () => {
-
     modal.classList.remove("show");
-
     message.textContent = "";
-
   });
 
+  modal.addEventListener("click", event => {
+    if (event.target === modal) {
+      modal.classList.remove("show");
+      message.textContent = "";
+    }
+  });
 
-  // ----------------------------------------
-  // 회원가입 / 로그인 전환
-  // ----------------------------------------
+  document.addEventListener("click", event => {
+    if (!event.target.closest("#auth-user-area")) {
+      closeDropdown();
+    }
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      closeDropdown();
+      modal.classList.remove("show");
+    }
+  });
 
   switchBtn.addEventListener("click", () => {
-
     isSignUpMode = !isSignUpMode;
-
     message.textContent = "";
 
     if (isSignUpMode) {
-
       title.textContent = "회원가입";
-
       submitBtn.textContent = "회원가입";
-
-      switchBtn.textContent =
-        "이미 계정이 있나요? 로그인";
-
+      switchBtn.textContent = "이미 계정이 있나요? 로그인";
       passwordInput.autocomplete = "new-password";
-
     } else {
-
       title.textContent = "로그인";
-
       submitBtn.textContent = "로그인";
-
-      switchBtn.textContent =
-        "계정이 없나요? 회원가입";
-
+      switchBtn.textContent = "계정이 없나요? 회원가입";
       passwordInput.autocomplete = "current-password";
-
     }
-
   });
 
-
-  // ----------------------------------------
-  // 로그인 / 회원가입 처리
-  // ----------------------------------------
-
-  form.addEventListener("submit", async (event) => {
-
+  form.addEventListener("submit", async event => {
     event.preventDefault();
 
     const email = emailInput.value.trim();
-
     const password = passwordInput.value;
 
-
     if (!email || !password) {
-
-      message.textContent =
-        "이메일과 비밀번호를 입력해주세요.";
-
+      message.textContent = "이메일과 비밀번호를 입력해주세요.";
       return;
-
     }
 
-
     submitBtn.disabled = true;
-
     message.textContent = "";
-
 
     let result;
 
-
-    if (isSignUpMode) {
-
-      result = await signUp(email, password);
-
-    } else {
-
-      result = await login(email, password);
-
+    try {
+      if (isSignUpMode) {
+        result = await signUp(email, password);
+      } else {
+        result = await login(email, password);
+      }
+    } catch (error) {
+      result = { success: false, error };
     }
-
 
     submitBtn.disabled = false;
 
-
     if (result.success) {
-
-      message.textContent =
-        "로그인되었습니다.";
-
       modal.classList.remove("show");
-
       emailInput.value = "";
       passwordInput.value = "";
-
+      message.textContent = "";
     } else {
-
-      message.textContent =
-        getAuthErrorMessage(result.error);
-
+      message.textContent = getAuthErrorMessage(result.error);
     }
-
   });
 
+  logoutBtn.addEventListener("click", async () => {
+    logoutBtn.disabled = true;
 
-  // ----------------------------------------
-  // 로그인 상태 감시
-  // ----------------------------------------
+    const result = await logout();
 
-  watchAuthState((user) => {
+    if (result.success) {
+      closeDropdown();
+      // 로그아웃 후 화면에 남아 있을 수 있는 개인 가계부 데이터를 확실히 초기화한다.
+      location.reload();
+      return;
+    }
 
-    if (user) {
+    logoutBtn.disabled = false;
+    alert(getAuthErrorMessage(result.error));
+  });
 
-      openBtn.textContent = "로그인됨";
+  watchAuthState(user => {
+    currentUser = user || null;
 
-      openBtn.style.background = "#2f7d32";
-
+    if (currentUser) {
+      openBtn.innerHTML = `
+        <span>👤 내 계정</span>
+        <span class="auth-account-arrow">▾</span>
+      `;
+      openBtn.classList.add("logged-in");
+      emailDisplay.textContent = currentUser.email || "이메일 정보 없음";
     } else {
-
+      closeDropdown();
       openBtn.textContent = "로그인";
-
-      openBtn.style.background = "#222";
-
+      openBtn.classList.remove("logged-in");
+      emailDisplay.textContent = "";
     }
-
   });
-
-
-  // ----------------------------------------
-  // 로그인 상태 버튼 클릭
-  // ----------------------------------------
-
-  openBtn.addEventListener("dblclick", async () => {
-
-    if (openBtn.textContent === "로그인됨") {
-
-      await logout();
-
-    }
-
-  });
-
 }
 
 
@@ -441,37 +463,26 @@ function createAuthUI() {
 // ==========================================
 
 function getAuthErrorMessage(error) {
-
   if (!error) {
     return "알 수 없는 오류가 발생했습니다.";
   }
 
-
   switch (error.code) {
-
     case "auth/email-already-in-use":
       return "이미 사용 중인 이메일입니다.";
-
     case "auth/invalid-email":
       return "이메일 주소가 올바르지 않습니다.";
-
     case "auth/weak-password":
       return "비밀번호가 너무 약합니다.";
-
     case "auth/invalid-credential":
       return "이메일 또는 비밀번호가 올바르지 않습니다.";
-
     case "auth/user-not-found":
       return "가입된 계정을 찾을 수 없습니다.";
-
     case "auth/wrong-password":
       return "비밀번호가 올바르지 않습니다.";
-
     default:
       return "처리 중 오류가 발생했습니다. 다시 시도해주세요.";
-
   }
-
 }
 
 

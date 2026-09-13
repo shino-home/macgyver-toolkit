@@ -1,6 +1,6 @@
 (() => {
 
-
+  const STORAGE_KEY = 'macgyver_household_account_v2';
 
   const CATEGORY_TAGS = {
     '생활비': ['식비', '간식비', '쇼핑', '기타'],
@@ -150,8 +150,10 @@ async function initializeCloudSync() {
 
         state = remoteState;
 
+          renderAll();
 
-        renderAll();
+        updateCloudStatus('저장됨');
+
       }
     );
 
@@ -192,6 +194,29 @@ async function initializeCloudSync() {
   }
 
 
+  function loadState() {
+
+    try {
+
+      const raw = localStorage.getItem(STORAGE_KEY);
+
+      if (!raw) {
+        return defaultState();
+      }
+
+      const parsed = JSON.parse(raw);
+
+      return parsed || defaultState();
+
+    } catch (error) {
+
+      console.error('가계부 데이터를 불러오지 못했습니다.', error);
+
+      return defaultState();
+
+    }
+
+  }
 
 
   function ensureState() {
@@ -313,6 +338,8 @@ async function initializeCloudSync() {
     saveState();
 
   }
+
+
 function updateCloudStatus(message) {
 
   const element =
@@ -325,6 +352,7 @@ function updateCloudStatus(message) {
   }
 
 }
+
 
 function saveState() {
 
