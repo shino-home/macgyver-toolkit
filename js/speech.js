@@ -60,38 +60,117 @@
     }
   }
 
+  function shuffleList(list) {
+    const result = [...(list || [])];
+
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+
+    return result;
+  }
+
   function renderWords(category) {
     if (!wordGrid) return;
+
     wordGrid.innerHTML = "";
     wordGrid.className = `word-grid ${category}`;
 
-    if (category === 'basic') {
+    // 1. 기초연습: 원본 순서 고정
+    if (category === "basic") {
       const list = allWordData.basic || [];
-      list.forEach(text => { createCard(text, "basic-card", false); });
+
+      list.forEach(text => {
+        createCard(text, "basic-card", false);
+      });
+
       return;
     }
 
-    if (category === 'wordRepeat') {
-      const data = allWordData.wordRepeat || { len3: [], len4: [], len5: [] };
-      const len3List = [...data.len3].sort(() => Math.random() - 0.5);
-      const len4List = [...data.len4].sort(() => Math.random() - 0.5);
-      const len5List = [...data.len5].sort(() => Math.random() - 0.5);
+    // 2. 모음 2글자: 셔플
+    if (category === "vowelWord2") {
+      const list = shuffleList(allWordData.vowelWord2);
 
-      const rowCount = Math.max(len3List.length, len4List.length, len5List.length);
+      list.forEach(text => {
+        createCard(text, "normal-card", false);
+      });
+
+      return;
+    }
+
+    // 3. 자음 2글자: 셔플
+    if (category === "consonantWord2") {
+      const list = shuffleList(allWordData.consonantWord2);
+
+      list.forEach(text => {
+        createCard(text, "normal-card", false);
+      });
+
+      return;
+    }
+
+    // 4. 3~5글자 반복:
+    // 왼쪽=3글자, 가운데=4글자, 오른쪽=5글자 고정
+    // 각 열은 서로 독립적으로 셔플
+    if (category === "wordRepeat") {
+      const data = allWordData.wordRepeat || {};
+
+      const len3List = shuffleList(data.len3);
+      const len4List = shuffleList(data.len4);
+      const len5List = shuffleList(data.len5);
+
+      const rowCount = Math.max(
+        len3List.length,
+        len4List.length,
+        len5List.length
+      );
 
       for (let i = 0; i < rowCount; i++) {
-        if (len3List[i]) createCard(len3List[i], "repeat-card", true);
-        if (len4List[i]) createCard(len4List[i], "repeat-card", true);
-        if (len5List[i]) createCard(len5List[i], "repeat-card", true);
+        createCard(
+          len3List[i] ?? "",
+          "repeat-card repeat-len3",
+          true
+        );
+
+        createCard(
+          len4List[i] ?? "",
+          "repeat-card repeat-len4",
+          true
+        );
+
+        createCard(
+          len5List[i] ?? "",
+          "repeat-card repeat-len5",
+          true
+        );
       }
+
       return;
     }
 
-    let list = allWordData[category] ? [...allWordData[category]] : [];
-    list.sort(() => Math.random() - 0.5);
+    // 5. 문장 연습:
+    // Lv1 15개 → Lv2 10개 → Lv3 5개
+    // 각 레벨은 서로 독립적으로 셔플
+    if (category === "sentence") {
+      const data = allWordData.sentence || {};
 
-    const isSentence = category === 'sentence';
-    list.forEach(text => { createCard(text, isSentence ? "sentence-card" : "normal-card", false); });
+      const lev1List = shuffleList(data.lev1);
+      const lev2List = shuffleList(data.lev2);
+      const lev3List = shuffleList(data.lev3);
+
+      const displayList = [
+        ...lev1List.slice(0, 15),
+        ...lev2List.slice(0, 10),
+        ...lev3List.slice(0, 5)
+      ];
+
+      displayList.forEach(text => {
+        createCard(text, "sentence-card", false);
+      });
+
+      return;
+    }
   }
 
   function createCard(text, cardClass, forceSingleLine) {
