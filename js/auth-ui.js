@@ -494,7 +494,7 @@ function createAuthUI() {
 
     if (result.success) {
       closeDropdown();
-      // 로그아웃 후 화면에 남아 있을 수 있는 개인 가계부 데이터를 확실히 초기화한다.
+      // Refresh the app after the authenticated user changes.
       location.reload();
       return;
     }
