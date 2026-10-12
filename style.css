@@ -1,4 +1,113 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+}
+
+.hall-help {
+  margin: 14px 0 0;
+}
+
+.hall-archive-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hall-archive-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e7ebe4;
+  border-radius: 10px;
+}
+
+.hall-archive-open {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hall-archive-open strong {
+  overflow-wrap: anywhere;
+}
+
+.hall-archive-open span {
+  color: #888;
+  font-size: 12px;
+}
+
+.hall-delete-quote {
+  flex-shrink: 0;
+  padding: 8px 10px;
+  background: #f9eeee;
+  color: #b65b5b;
+}
+
+.hall-notice {
+  padding: 18px;
+  border-radius: 12px;
+  background: #fff7e8;
+  color: #805c28;
+}
+
+@media (max-width: 760px) {
+  .hall-tour-section {
+    padding: 14px;
+  }
+
+  .hall-tour-header {
+    align-items: flex-start;
+  }
+
+  .hall-tour-header h2 {
+    font-size: 20px;
+  }
+
+  .hall-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hall-panel {
+    padding: 14px;
+  }
+}
+/* 홀 투어 계산기 수정: 저장 버튼 및 한 줄 기본정보 */
+.hall-info-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.hall-save-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+}
+.hall-save-row .hall-save-status {
+  margin-top: 0;
+  min-height: 18px;
+}
+#hall-save-quote:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+.hall-row-input {
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 760px) {
+  .hall-info-grid { grid-template-columns: 1fr 1fr; }
+  .hall-save-row { align-items: flex-start; }
+}
+@media (max-width: 480px) {
+  .hall-info-grid { grid-template-columns: 1fr; }
+}@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 
 @font-face {
   font-family: 'GmarketSansMedium';
@@ -9060,3 +9169,300 @@ s {
   font-size: 12px;
   color: #777;
 }
+
+/* ==========================================
+   홀 투어 계산기
+========================================== */
+
+.nav-btn.hall-tour {
+  color: var(--sage-text);
+}
+
+.hall-tour-section {
+  padding: 24px;
+}
+
+.hall-tour-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.hall-tour-header h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.hall-tour-header p,
+.hall-muted,
+.hall-help {
+  color: #777;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.hall-tour-header p {
+  margin: 0;
+}
+
+.hall-panel {
+  background: var(--panel-bg, #fff);
+  border: 1px solid var(--sage-border, #e1e8df);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.035);
+}
+
+.hall-panel-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.hall-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.hall-info-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.hall-info-grid input,
+.hall-row-input,
+.hall-row-label {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #dfe4dc;
+  border-radius: 8px;
+  background: #fff;
+  color: #333;
+  font: inherit;
+}
+
+.hall-info-grid input:focus,
+.hall-row-input:focus,
+.hall-row-label:focus {
+  outline: 2px solid var(--sage-border, #b8cbb7);
+  outline-offset: 1px;
+}
+
+.hall-save-status {
+  margin-top: 14px;
+  color: #71836d;
+  font-size: 12px;
+}
+
+.hall-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.hall-quote-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.hall-quote-table th,
+.hall-quote-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #edf0eb;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.hall-quote-table th {
+  background: #f4f7f2;
+  color: #586653;
+  font-weight: 700;
+}
+
+.hall-quote-table th:first-child {
+  border-radius: 8px 0 0 0;
+}
+
+.hall-quote-table th:last-child {
+  border-radius: 0 8px 0 0;
+}
+
+.hall-row-label {
+  width: 100px;
+}
+
+.hall-row-input {
+  width: 110px;
+  text-align: right;
+}
+
+.hall-total {
+  font-weight: 700;
+}
+
+.hall-difference {
+  font-weight: 700;
+}
+
+.hall-difference.positive {
+  color: #3e8055;
+}
+
+.hall-difference.negative {
+  color: #bd5b5b;
+}
+
+.hall-primary-btn,
+.hall-secondary-btn,
+.hall-delete-row,
+.hall-delete-quote {
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.hall-primary-btn {
+  padding: 11px 16px;
+  background: var(--sage-text, #60745b);
+  color: #fff;
+  white-space: nowrap;
+}
+
+.hall-secondary-btn {
+  padding: 9px 13px;
+  background: #edf3e9;
+  color: #52664d;
+}
+
+.hall-delete-row {
+  width: 30px;
+  height: 30px;
+  background: #f9eeee;
+  color: #b65b5b;
+  font-size: 19px;
+}
+
+.hall-table-actions {
+  margin-top: 14px;
+}
+
+.hall-help {
+  margin: 14px 0 0;
+}
+
+.hall-archive-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hall-archive-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e7ebe4;
+  border-radius: 10px;
+}
+
+.hall-archive-open {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hall-archive-open strong {
+  overflow-wrap: anywhere;
+}
+
+.hall-archive-open span {
+  color: #888;
+  font-size: 12px;
+}
+
+.hall-delete-quote {
+  flex-shrink: 0;
+  padding: 8px 10px;
+  background: #f9eeee;
+  color: #b65b5b;
+}
+
+.hall-notice {
+  padding: 18px;
+  border-radius: 12px;
+  background: #fff7e8;
+  color: #805c28;
+}
+
+@media (max-width: 760px) {
+  .hall-tour-section {
+    padding: 14px;
+  }
+
+  .hall-tour-header {
+    align-items: flex-start;
+  }
+
+  .hall-tour-header h2 {
+    font-size: 20px;
+  }
+
+  .hall-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hall-panel {
+    padding: 14px;
+  }
+}
+/* 홀 투어 계산기 수정: 저장 버튼 및 한 줄 기본정보 */
+.hall-info-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.hall-save-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+}
+.hall-save-row .hall-save-status {
+  margin-top: 0;
+  min-height: 18px;
+}
+#hall-save-quote:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+.hall-row-input {
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 760px) {
+  .hall-info-grid { grid-template-columns: 1fr 1fr; }
+  .hall-save-row { align-items: flex-start; }
+}
+@media (max-width: 480px) {
+  .hall-info-grid { grid-template-columns: 1fr; }
+}
+

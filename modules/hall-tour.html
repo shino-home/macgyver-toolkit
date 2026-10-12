@@ -1,0 +1,62 @@
+<section class="content-section active hall-tour-section">
+  <div class="hall-tour-header">
+    <div>
+      <h2>홀 투어 계산기</h2>
+      <p>웨딩홀 견적과 축의금 예상액을 비교해 보세요.</p>
+    </div>
+    <button type="button" id="hall-new-quote" class="hall-primary-btn">+ 새 견적</button>
+  </div>
+
+  <div id="hall-login-notice" class="hall-notice" hidden>
+    견적을 저장하려면 먼저 로그인해 주세요.
+  </div>
+
+  <div id="hall-calculator" hidden>
+    <div class="hall-panel">
+      <div class="hall-panel-title">견적 기본 정보</div>
+      <div class="hall-info-grid">
+        <label>
+          웨딩홀명
+          <input id="hall-venue-name" type="text" placeholder="예: ○○웨딩홀" maxlength="100">
+        </label>
+        <label>
+          홀 이름
+          <input id="hall-room-name" type="text" placeholder="예: 그랜드홀" maxlength="100">
+        </label>
+      </div>
+      <div class="hall-save-row">
+        <div class="hall-save-status" id="hall-save-status" aria-live="polite">견적을 준비하고 있습니다.</div>
+        <button type="button" id="hall-save-quote" class="hall-primary-btn">저장</button>
+      </div>
+    </div>
+
+    <div class="hall-panel">
+      <div class="hall-panel-title">견적 조건 비교</div>
+      <div class="hall-table-wrap">
+        <table class="hall-quote-table">
+          <thead>
+            <tr>
+              <th>조건</th><th>하객 수</th><th>식대(원)</th><th>대관료(원)</th>
+              <th>총비용</th><th>축의금 예상</th><th>차액</th><th>삭제</th>
+            </tr>
+          </thead>
+          <tbody id="hall-quote-rows"></tbody>
+        </table>
+      </div>
+      <div class="hall-table-actions">
+        <button type="button" id="hall-add-row" class="hall-secondary-btn">+ 조건 추가</button>
+      </div>
+      <p class="hall-help">
+        총비용 = 하객 수 × 식대 + 대관료<br>
+        축의금 예상 = 하객 수 × 100,000원<br>
+        차액 = 축의금 예상액 − 총비용
+      </p>
+    </div>
+
+    <div class="hall-panel">
+      <div class="hall-panel-title">견적 보관함</div>
+      <p class="hall-muted">저장된 견적을 선택해 다시 열거나, 필요 없는 견적을 삭제할 수 있습니다.</p>
+      <div id="hall-archive-list" class="hall-archive-list"></div>
+    </div>
+  </div>
+</section>
