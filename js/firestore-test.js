@@ -60,7 +60,7 @@ onAuthStateChanged(auth, async (user) => {
 
     await setDoc(testRef, {
 
-      message: "MacGyver Toolkit Firestore 연결 테스트",
+      message: "Car's DESK Firestore 연결 테스트",
 
       testTime: new Date().toISOString(),
 

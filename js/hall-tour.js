@@ -1,5 +1,5 @@
 // ==========================================
-// 홀 투어 계산기
+// 웨딩홀 계산기
 // Firebase 사용자별 견적 저장
 // ==========================================
 
@@ -26,10 +26,11 @@
   let unsubscribeArchive = null;
   let saveTimer = null;
   let archiveCache = [];
-  let creatingInitialQuote = false;
   let saveInProgress = null;
   let changeVersion = 0;
   let quoteNeedsSave = false;
+  let currentQuotePersisted = false;
+  let currentQuoteHasInput = false;
   let archiveSortMode = "saved";
 
   const digitsOnly = value => String(value ?? "").replace(/[^0-9]/g, "");
@@ -72,13 +73,14 @@
     return crypto.randomUUID();
   }
 
-  function makeRow() {
+  function makeRow(index, fresh = true) {
     return {
       id: makeId(),
-      label: `조건 ${currentQuote.rows.length + 1}`,
+      label: `조건 ${index}`,
       guests: 200,
       mealPrice: 0,
-      rentalFee: 0
+      rentalFee: 0,
+      fresh: { label: fresh, mealPrice: fresh, rentalFee: fresh }
     };
   }
 
@@ -88,7 +90,7 @@
       venueName: "",
       roomName: "",
       giftPrice: DEFAULT_GIFT_PER_GUEST,
-      rows: [{ id: makeId(), label: "조건 1", guests: 200, mealPrice: 0, rentalFee: 0 }]
+      rows: [makeRow(1)]
     };
   }
 
@@ -123,12 +125,14 @@
     try { input.setSelectionRange(position, position); } catch (_) {}
   }
 
-  function numericInput(field, id, value, label, step) {
-    return `<input type="text" inputmode="numeric" autocomplete="off" class="hall-row-input" data-field="${field}" data-id="${id}" aria-label="${label}" value="${formatMoney(value)}" data-step="${step}">`;
+  function numericInput(field, id, value, label, step, fresh = false) {
+    const display = fresh && Number(value) === 0 ? "" : formatMoney(value);
+    return `<input type="text" inputmode="numeric" autocomplete="off" class="hall-row-input" data-field="${field}" data-id="${id}" aria-label="${label}" value="${display}"${display ? "" : ' placeholder="0"'} data-step="${step}">`;
   }
 
-  function rentalInput(id, value) {
-    return `<input type="text" inputmode="decimal" autocomplete="off" class="hall-row-input hall-rental-input" data-field="rentalFee" data-id="${id}" aria-label="대관료, 만원 단위" value="${formatTenThousands(value)}">`;
+  function rentalInput(id, value, fresh = false) {
+    const display = fresh && Number(value) === 0 ? "" : formatTenThousands(value);
+    return `<input type="text" inputmode="decimal" autocomplete="off" class="hall-row-input hall-rental-input" data-field="rentalFee" data-id="${id}" aria-label="대관료, 만원 단위" value="${display}"${display ? "" : ' placeholder="0"'}>`;
   }
 
   function renderRows() {
@@ -137,15 +141,15 @@
       const result = calculate(row);
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td data-label="조건"><div class="hall-condition-cell"><input class="hall-row-label" data-field="label" data-id="${row.id}" aria-label="조건 이름" maxlength="40"><button type="button" class="hall-delete-row" data-delete-row="${row.id}" aria-label="조건 삭제">×</button></div></td>
+        <td data-label="조건"><div class="hall-condition-cell"><input class="hall-row-label" data-field="label" data-id="${row.id}" aria-label="조건 이름" maxlength="40" placeholder="${row.fresh?.label ? row.label : ""}"><button type="button" class="hall-delete-row" data-delete-row="${row.id}" aria-label="조건 삭제">×</button></div></td>
         <td data-label="하객 수">${numericInput("guests", row.id, row.guests, "하객 수", 10)}</td>
-        <td data-label="식대(원)">${numericInput("mealPrice", row.id, row.mealPrice, "식대(원)", 1000)}</td>
-        <td data-label="대관료(만원)">${rentalInput(row.id, row.rentalFee)}</td>
+        <td data-label="식대(원)">${numericInput("mealPrice", row.id, row.mealPrice, "식대(원)", 1000, row.fresh?.mealPrice)}</td>
+        <td data-label="대관료(만원)">${rentalInput(row.id, row.rentalFee, row.fresh?.rentalFee)}</td>
         <td data-label="총비용" class="hall-total">${compactMoney(result.total)}</td>
         <td data-label="정산후" class="hall-difference ${result.difference >= 0 ? "positive" : "negative"}">${compactMoney(result.difference)}</td>
       `;
       rowsBody.appendChild(tr);
-      tr.querySelector('[data-field="label"]').value = row.label;
+      tr.querySelector('[data-field="label"]').value = row.fresh?.label ? "" : row.label;
     });
   }
 
@@ -177,6 +181,10 @@
 
   async function saveCurrentQuote(options = {}) {
     if (!currentUser || !currentQuote) return;
+    if (!currentQuotePersisted && !currentQuoteHasInput) {
+      if (options.manual) setStatus("내용을 입력하면 자동 저장됩니다.");
+      return;
+    }
     const quoteId = currentQuote.id;
     const savingUser = currentUser;
 
@@ -190,7 +198,7 @@
       venueName: quote.venueName,
       roomName: quote.roomName,
       giftPrice: DEFAULT_GIFT_PER_GUEST,
-      rows: quote.rows.map(row => ({ ...row })),
+      rows: quote.rows.map(({ id, label, guests, mealPrice, rentalFee }) => ({ id, label, guests, mealPrice, rentalFee })),
       updatedAt: firestore.serverTimestamp()
     };
 
@@ -204,6 +212,7 @@
       await operation;
       if (currentUser?.uid === savingUser.uid && currentQuote?.id === quote.id) {
         if (changeVersion === versionAtStart) {
+          currentQuotePersisted = true;
           quoteNeedsSave = false;
           setStatus(options.manual ? "저장 완료" : "자동 저장 완료");
         } else {
@@ -221,8 +230,10 @@
     }
   }
 
-  function scheduleSave() {
+  function scheduleSave({ userInput = false } = {}) {
     if (!currentUser || !currentQuote) return;
+    if (userInput) currentQuoteHasInput = true;
+    if (!currentQuotePersisted && !currentQuoteHasInput) return;
     changeVersion++;
     quoteNeedsSave = true;
     setStatus("변경 내용 저장 대기 중...");
@@ -234,6 +245,10 @@
 
   async function manualSave() {
     if (!currentUser || !currentQuote) return;
+    if (!currentQuotePersisted && !currentQuoteHasInput) {
+      setStatus("내용을 입력하면 자동 저장됩니다.");
+      return;
+    }
     clearTimeout(saveTimer);
     saveTimer = null;
     try {
@@ -294,9 +309,10 @@
           label: row.label || `조건 ${index + 1}`,
           guests: money(row.guests ?? 200),
           mealPrice: money(row.mealPrice ?? 0),
-          rentalFee: money(row.rentalFee ?? 0)
+          rentalFee: money(row.rentalFee ?? 0),
+          fresh: { label: false, mealPrice: false, rentalFee: false }
         }))
-      : [{ id: makeId(), label: "조건 1", guests: 200, mealPrice: 0, rentalFee: 0 }];
+      : [{ id: makeId(), label: "조건 1", guests: 200, mealPrice: 0, rentalFee: 0, fresh: { label: false, mealPrice: false, rentalFee: false } }];
     return {
       id,
       venueName: data.venueName || "",
@@ -313,13 +329,16 @@
     if (currentQuote && quoteNeedsSave) {
       try { await saveCurrentQuote(); } catch (_) { return; }
     }
+    clearTimeout(saveTimer);
+    saveTimer = null;
     currentQuote = makeQuote();
-    quoteNeedsSave = true;
+    currentQuotePersisted = false;
+    currentQuoteHasInput = false;
+    quoteNeedsSave = false;
     changeVersion++;
     renderQuote();
     renderArchive();
-    setStatus("새 견적 저장 중...");
-    try { await saveCurrentQuote({ manual: true }); } catch (_) {}
+    setStatus("새 견적입니다. 입력하면 자동 저장됩니다.");
   }
 
   async function openQuote(quoteId) {
@@ -329,9 +348,13 @@
     if (quoteNeedsSave) {
       try { await saveCurrentQuote(); } catch (_) { return; }
     }
+    clearTimeout(saveTimer);
+    saveTimer = null;
     const cached = archiveCache.find(item => item.id === quoteId);
     if (!cached) return;
     currentQuote = normalizeQuote(cached.id, cached);
+    currentQuotePersisted = true;
+    currentQuoteHasInput = true;
     quoteNeedsSave = false;
     changeVersion++;
     renderQuote();
@@ -356,8 +379,16 @@
     if (deletingCurrent) {
       clearTimeout(saveTimer);
       saveTimer = null;
-      currentQuote = null;
+      if (saveInProgress) {
+        try { await saveInProgress; } catch (_) {}
+      }
+      clearTimeout(saveTimer);
+      saveTimer = null;
+      currentQuote = makeQuote();
+      currentQuotePersisted = false;
+      currentQuoteHasInput = false;
       quoteNeedsSave = false;
+      renderQuote();
     }
     try {
       await firestore.deleteDoc(quoteRef(quoteId));
@@ -370,14 +401,14 @@
   venueInput.addEventListener("input", () => {
     if (!currentQuote) return;
     currentQuote.venueName = venueInput.value;
-    scheduleSave();
+    scheduleSave({ userInput: true });
     renderArchive();
   });
 
   roomInput.addEventListener("input", () => {
     if (!currentQuote) return;
     currentQuote.roomName = roomInput.value;
-    scheduleSave();
+    scheduleSave({ userInput: true });
     renderArchive();
   });
 
@@ -392,17 +423,19 @@
 
     if (field === "label") {
       row.label = input.value;
+      if (row.fresh) row.fresh.label = false;
     } else {
       row[field] = field === "rentalFee" ? parseTenThousands(input.value) : money(input.value);
+      if (row.fresh && Object.prototype.hasOwnProperty.call(row.fresh, field)) row.fresh[field] = false;
       if (field !== "rentalFee") formatNumericInput(input);
       updateRowResults(rowId);
     }
-    scheduleSave();
+    scheduleSave({ userInput: true });
   });
 
   document.getElementById("hall-add-row").addEventListener("click", () => {
     if (!currentQuote) return;
-    currentQuote.rows.push(makeRow());
+    currentQuote.rows.push(makeRow(currentQuote.rows.length + 1));
     renderRows();
     scheduleSave();
   });
@@ -450,6 +483,8 @@
       clearTimeout(saveTimer);
       saveTimer = null;
       currentQuote = null;
+      currentQuotePersisted = false;
+      currentQuoteHasInput = false;
       quoteNeedsSave = false;
       archiveCache = [];
       changeVersion++;
@@ -462,29 +497,28 @@
         return;
       }
 
+      currentQuote = makeQuote();
+      currentQuotePersisted = false;
+      currentQuoteHasInput = false;
+      quoteNeedsSave = false;
+      changeVersion++;
+      renderQuote();
+      renderArchive();
+      setStatus("새 견적입니다. 입력하면 자동 저장됩니다.");
+
       const quotesCollection = firestore.collection(db, "users", user.uid, "hallTourQuotes");
       unsubscribeArchive = firestore.onSnapshot(quotesCollection, async snapshot => {
         if (currentUser?.uid !== user.uid) return;
         archiveCache = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
         renderArchive();
 
-        if (!currentQuote && archiveCache.length > 0) {
-          currentQuote = normalizeQuote(archiveCache[0].id, archiveCache[0]);
-          changeVersion++;
-          renderQuote();
-          setStatus("저장된 견적을 불러왔습니다.");
-        } else if (!currentQuote && archiveCache.length === 0 && !creatingInitialQuote) {
-          creatingInitialQuote = true;
-          try { await createNewQuote(); }
-          finally { creatingInitialQuote = false; }
-        }
       }, error => {
         console.error("견적 보관함 불러오기 실패:", error);
         setStatus("보관함을 불러오지 못했습니다.");
       });
     });
   } catch (error) {
-    console.error("홀 투어 계산기 초기화 실패:", error);
+    console.error("웨딩홀 계산기 초기화 실패:", error);
     loginNotice.hidden = false;
     loginNotice.textContent = "계산기를 초기화하지 못했습니다. Firebase 설정과 인터넷 연결을 확인해 주세요.";
     calculator.hidden = true;

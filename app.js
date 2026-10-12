@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuToggle = document.getElementById('mobile-menu-toggle');
   const sidebar = document.getElementById('app-sidebar');
   const backdrop = document.getElementById('sidebar-backdrop');
-  const buildVersion = '20261013';
+  const buildVersion = '20261014';
 
   function setMobileMenuOpen(open) {
     const wasOpen = document.body.classList.contains('mobile-menu-open');
@@ -64,17 +64,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderHomeDashboard() {
     navMenu?.querySelectorAll('.nav-btn').forEach(button => button.classList.remove('active'));
+    const features = Array.from(navMenu?.querySelectorAll('.nav-btn') || [], button => {
+      const icon = button.querySelector('.icon-box')?.textContent.trim() || '';
+      const title = button.querySelector('.main-label')?.textContent.trim() || '';
+      const subtitle = button.dataset.module === 'speech' ? '말하기 연습과 타이머' : '웨딩홀 견적 비교 및 보관';
+      return `<button class="home-feature" type="button" data-module="${button.dataset.module}"><span class="home-feature-icon">${icon}</span><span><strong>${title}</strong><small>${subtitle}</small></span><span class="home-feature-arrow" aria-hidden="true">→</span></button>`;
+    }).join('');
     workspace.innerHTML = `
       <section id="home-section" class="content-section active home-dashboard">
-        <header class="home-heading"><p class="eyebrow">MACGYVER TOOLKIT</p><h1>오늘도 차근차근</h1><p>필요한 도구를 골라 바로 시작해 보세요.</p></header>
-        <div class="home-feature-grid">
-          <button class="home-feature" type="button" data-module="speech"><span class="home-feature-icon">🗣️</span><span><strong>스피치 테라피</strong><small>말하기 연습과 타이머</small></span><span class="home-feature-arrow" aria-hidden="true">→</span></button>
-          <button class="home-feature" type="button" data-module="hall-tour"><span class="home-feature-icon">💒</span><span><strong>홀 투어 계산기</strong><small>웨딩홀 견적을 비교하고 보관</small></span><span class="home-feature-arrow" aria-hidden="true">→</span></button>
-        </div>
+        <header class="home-heading"><p class="eyebrow">Car's DESK</p><h1>오늘도 차근차근</h1><p>필요한 도구를 골라 바로 시작해 보세요.</p></header>
+        <div class="home-feature-grid">${features}</div>
         <div class="home-note"><span aria-hidden="true">✦</span><p>작은 준비가 오늘의 여유를 만듭니다.</p></div>
       </section>`;
     workspace.querySelectorAll('[data-module]').forEach(button => button.addEventListener('click', () => loadModule(button.dataset.module)));
   }
+
+  document.addEventListener('sidebarorderchange', () => {
+    if (workspace.querySelector('#home-section')) renderHomeDashboard();
+  });
 
   navMenu?.addEventListener('click', event => {
     const button = event.target.closest('.nav-btn');

@@ -7,27 +7,18 @@ if (menu) {
   const defaultOrder = Array.from(menu.querySelectorAll(".nav-btn"), button => button.dataset.module);
   let currentUser = null;
   let draggedButton = null;
+  let pointerButton = null;
   let orderAtDragStart = null;
   let authRevision = 0;
-  let touchTimer = null;
-  let pointerHandle = null;
+  let longPressTimer = null;
+  let pointerId = null;
+  let pointerStartX = 0;
   let pointerStartY = 0;
-  let pointerGrabOffsetY = 0;
-  let pointerBaseTop = 0;
   let pointerDragging = false;
-
-  menu.querySelectorAll(".nav-btn").forEach(button => {
-    const handle = document.createElement("span");
-    handle.className = "nav-drag-handle";
-    handle.textContent = "⠿";
-    handle.setAttribute("role", "button");
-    handle.setAttribute("tabindex", "-1");
-    handle.setAttribute("aria-label", `${button.querySelector(".main-label")?.textContent || "기능"} 순서 변경`);
-    handle.title = "길게 눌러 메뉴 순서 변경";
-    button.appendChild(handle);
-  });
+  let suppressNextClick = false;
 
   const getCurrentOrder = () => Array.from(menu.querySelectorAll(".nav-btn"), button => button.dataset.module);
+  const announceOrder = () => document.dispatchEvent(new CustomEvent("sidebarorderchange", { detail: { moduleOrder: getCurrentOrder() } }));
 
   function applyOrder(savedOrder) {
     const buttons = new Map(Array.from(menu.querySelectorAll(".nav-btn"), button => [button.dataset.module, button]));
@@ -38,15 +29,14 @@ if (menu) {
     }
     for (const module of defaultOrder) if (!seen.has(module)) ordered.push(module);
     ordered.forEach(module => menu.appendChild(buttons.get(module)));
+    announceOrder();
   }
 
   function setReorderEnabled(enabled) {
     menu.querySelectorAll(".nav-btn").forEach(button => {
-      button.draggable = enabled;
-      const handle = button.querySelector(".nav-drag-handle");
-      handle?.setAttribute("tabindex", enabled ? "0" : "-1");
-      handle?.setAttribute("aria-disabled", String(!enabled));
-      button.title = enabled ? `${button.querySelector(".main-label")?.textContent || "기능"} — 끌어서 순서 변경` : "";
+      button.draggable = false;
+      button.setAttribute("aria-label", `${button.querySelector(".main-label")?.textContent || "기능"}. ${enabled ? "길게 누른 뒤 끌어 순서를 바꿀 수 있습니다." : ""}`.trim());
+      button.title = enabled ? "길게 누른 뒤 끌어 메뉴 순서 변경 · Alt+방향키로 이동" : "";
     });
     menu.classList.toggle("sidebar-order-enabled", enabled);
   }
@@ -63,143 +53,127 @@ if (menu) {
     }
   }
 
-  function moveButtonAt(clientY) {
+  function moveButtonAt(clientX, clientY) {
     if (!draggedButton) return;
-    const target = document.elementFromPoint(window.innerWidth / 2, clientY)?.closest(".nav-btn");
+    const pointed = document.elementFromPoint(clientX, clientY);
+    const buttons = Array.from(menu.querySelectorAll(".nav-btn"));
+    const first = buttons[0];
+    const last = buttons[buttons.length - 1];
+    let target = pointed?.closest(".nav-btn") || document.elementFromPoint(menu.getBoundingClientRect().left + menu.clientWidth / 2, clientY)?.closest(".nav-btn");
+    let forceBefore = false;
+    let forceAfter = false;
+    if (!target && first && clientY < first.getBoundingClientRect().top) { target = first; forceBefore = true; }
+    if (!target && last && clientY > last.getBoundingClientRect().bottom) { target = last; forceAfter = true; }
     if (!target || target === draggedButton || !menu.contains(target)) return;
-    const after = clientY > target.getBoundingClientRect().top + target.getBoundingClientRect().height / 2;
     const oldPositions = new Map(Array.from(menu.querySelectorAll(".nav-btn"), button => [button, button.getBoundingClientRect().top]));
-    const oldParent = draggedButton.parentElement;
-    const oldNext = draggedButton.nextElementSibling;
+    const rect = target.getBoundingClientRect();
+    const after = forceAfter || (!forceBefore && clientY > rect.top + rect.height / 2);
+    const beforeOrder = getCurrentOrder().join("|");
     menu.insertBefore(draggedButton, after ? target.nextSibling : target);
-    if (oldParent !== draggedButton.parentElement || oldNext !== draggedButton.nextElementSibling) {
+    if (beforeOrder !== getCurrentOrder().join("|")) {
       for (const [button, oldTop] of oldPositions) {
-        if (button === draggedButton || !button.isConnected) continue;
+        if (button === draggedButton) continue;
         const delta = oldTop - button.getBoundingClientRect().top;
         if (Math.abs(delta) < 1) continue;
         button.style.transition = "none";
         button.style.transform = `translateY(${delta}px)`;
+        void button.offsetHeight;
         requestAnimationFrame(() => {
           button.style.transition = "";
           button.style.transform = "";
         });
       }
+      announceOrder();
     }
   }
 
-  menu.addEventListener("dragstart", event => {
-    const button = event.target.closest(".nav-btn");
-    if (!currentUser || !button) { event.preventDefault(); return; }
+  function startDrag(button) {
+    if (!currentUser || pointerDragging) return;
+    pointerDragging = true;
     draggedButton = button;
     orderAtDragStart = getCurrentOrder();
     button.classList.add("dragging");
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", button.dataset.module);
-  });
-  menu.addEventListener("dragover", event => {
-    if (!draggedButton) return;
-    event.preventDefault();
-    moveButtonAt(event.clientY);
-  });
-  menu.addEventListener("dragend", async () => {
-    if (!draggedButton) return;
-    draggedButton.classList.remove("dragging");
+    menu.classList.add("pointer-reordering");
+  }
+
+  function clearDragStyles() {
+    menu.classList.remove("pointer-reordering");
+    menu.querySelectorAll(".nav-btn.dragging").forEach(button => button.classList.remove("dragging"));
+  }
+
+  async function finishDrag(cancelled = false) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+    if (pointerId === null) return;
+    pointerId = null;
+    pointerButton = null;
+    if (!pointerDragging) return;
+    pointerDragging = false;
+    if (cancelled && orderAtDragStart) applyOrder(orderAtDragStart);
+    clearDragStyles();
+    if (cancelled || JSON.stringify(orderAtDragStart) !== JSON.stringify(getCurrentOrder())) {
+      if (!cancelled) await saveOrder();
+    }
+    suppressNextClick = !cancelled;
+    window.setTimeout(() => { suppressNextClick = false; }, 0);
     draggedButton = null;
-    if (JSON.stringify(orderAtDragStart) !== JSON.stringify(getCurrentOrder())) await saveOrder();
     orderAtDragStart = null;
-  });
+  }
 
   menu.addEventListener("pointerdown", event => {
-    const handle = event.target.closest(".nav-drag-handle");
-    const button = handle?.closest(".nav-btn");
-    if (!currentUser || !handle || !button || event.button !== 0) return;
-    event.preventDefault();
-    event.stopPropagation();
-    pointerHandle = handle;
+    const button = event.target.closest(".nav-btn");
+    if (!currentUser || !button || (event.pointerType === "mouse" && event.button !== 0)) return;
+    pointerButton = button;
+    pointerId = event.pointerId;
+    pointerStartX = event.clientX;
     pointerStartY = event.clientY;
-    pointerDragging = false;
-    touchTimer = window.setTimeout(() => {
-      touchTimer = null;
-      if (!pointerHandle) return;
-      pointerDragging = true;
-      draggedButton = button;
-      orderAtDragStart = getCurrentOrder();
-      const rect = button.getBoundingClientRect();
-      pointerGrabOffsetY = pointerStartY - rect.top;
-      pointerBaseTop = rect.top;
-      button.classList.add("dragging");
-      button.style.pointerEvents = "none";
-      menu.classList.add("touch-reordering");
-      try { handle.setPointerCapture(event.pointerId); } catch (_) {}
-    }, 180);
+    if (event.pointerType === "touch" || event.pointerType === "pen") {
+      longPressTimer = window.setTimeout(() => startDrag(button), 280);
+    }
   });
 
   document.addEventListener("pointermove", event => {
-    if (!pointerHandle) return;
-    if (touchTimer && Math.abs(event.clientY - pointerStartY) > 10) {
-      clearTimeout(touchTimer);
-      touchTimer = null;
-      pointerHandle = null;
+    if (event.pointerId !== pointerId) return;
+    const dx = event.clientX - pointerStartX;
+    const dy = event.clientY - pointerStartY;
+    if (longPressTimer && Math.hypot(dx, dy) > 9) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      pointerId = null;
+      pointerButton = null;
       return;
+    }
+    if (!pointerDragging && event.pointerType === "mouse" && Math.hypot(dx, dy) > 5) {
+      startDrag(pointerButton);
     }
     if (!pointerDragging) return;
     event.preventDefault();
-    draggedButton.style.setProperty("--drag-offset", `${event.clientY - pointerGrabOffsetY - pointerBaseTop}px`);
-    const before = getCurrentOrder().join("|");
-    moveButtonAt(event.clientY);
-    if (before !== getCurrentOrder().join("|")) {
-      draggedButton.style.setProperty("--drag-offset", "0px");
-      const rect = draggedButton.getBoundingClientRect();
-      pointerBaseTop = rect.top;
-      draggedButton.style.setProperty("--drag-offset", `${event.clientY - pointerGrabOffsetY - pointerBaseTop}px`);
-    }
+    moveButtonAt(event.clientX, event.clientY);
   }, { passive: false });
 
+  document.addEventListener("pointerup", () => finishDrag(false));
+  document.addEventListener("pointercancel", () => finishDrag(true));
+  window.addEventListener("blur", () => finishDrag(true));
+
   menu.addEventListener("click", event => {
-    if (!event.target.closest(".nav-drag-handle")) return;
+    if (!suppressNextClick) return;
+    suppressNextClick = false;
     event.preventDefault();
-    event.stopPropagation();
+    event.stopImmediatePropagation();
   }, true);
 
-  async function finishPointerDrag(event) {
-    if (touchTimer) clearTimeout(touchTimer);
-    touchTimer = null;
-    if (!pointerHandle) return;
-    const handle = pointerHandle;
-    pointerHandle = null;
-    try { if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId); } catch (_) {}
-    if (!pointerDragging) return;
-    pointerDragging = false;
-    menu.classList.remove("touch-reordering");
-    if (draggedButton) {
-      draggedButton.classList.remove("dragging");
-      draggedButton.style.removeProperty("--drag-offset");
-      draggedButton.style.removeProperty("pointer-events");
-    }
-    draggedButton = null;
-    if (JSON.stringify(orderAtDragStart) !== JSON.stringify(getCurrentOrder())) await saveOrder();
-    orderAtDragStart = null;
-  }
-  document.addEventListener("pointerup", finishPointerDrag);
-  document.addEventListener("pointercancel", finishPointerDrag);
-
   menu.addEventListener("keydown", async event => {
-    const handle = event.target.closest(".nav-drag-handle");
-    if (!handle || !currentUser) return;
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-    if (!["ArrowUp", "ArrowDown"].includes(event.key)) return;
+    const button = event.target.closest(".nav-btn");
+    if (!button || !currentUser || !event.altKey || !["ArrowUp", "ArrowDown"].includes(event.key)) return;
     event.preventDefault();
-    const button = handle.closest(".nav-btn");
     const sibling = event.key === "ArrowUp" ? button.previousElementSibling : button.nextElementSibling;
     if (!sibling) return;
     orderAtDragStart = getCurrentOrder();
     menu.insertBefore(button, event.key === "ArrowUp" ? sibling : sibling.nextSibling);
+    announceOrder();
     await saveOrder();
-    handle.focus();
+    button.focus();
+    orderAtDragStart = null;
   });
 
   onAuthStateChanged(auth, async user => {

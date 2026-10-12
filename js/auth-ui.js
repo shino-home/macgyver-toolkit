@@ -1,5 +1,5 @@
 // ==========================================
-// 맥가이버툴 로그인 화면
+// Car's DESK 로그인 화면
 // ==========================================
 
 import {
@@ -74,9 +74,13 @@ function createAuthUI() {
     .auth-dropdown {
       position: absolute;
       top: calc(100% + 8px);
-      left: 0;
-      width: 100%;
+      left: 50%;
+      width: max-content;
+      min-width: 180px;
+      max-width: min(300px, calc(100vw - 32px));
       box-sizing: border-box;
+      transform: translateX(-50%);
+      overflow: hidden;
       padding: 7px;
       border: 1px solid rgba(0, 0, 0, 0.08);
       border-radius: 13px;
@@ -89,11 +93,12 @@ function createAuthUI() {
     }
 
     .auth-email {
+      min-width: 0;
       padding: 10px 11px 9px;
       color: #666;
       font-size: 12px;
       line-height: 1.4;
-      word-break: break-all;
+      overflow-wrap: anywhere;
     }
 
     .auth-logout-btn {
@@ -274,7 +279,7 @@ function createAuthUI() {
         <h2 id="auth-title">로그인</h2>
 
         <p class="auth-description">
-          맥가이버툴 계정으로 로그인하세요.
+          Car's DESK 계정으로 로그인하세요.
         </p>
 
         <form id="auth-form">
