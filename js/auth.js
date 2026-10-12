@@ -5,6 +5,7 @@
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
@@ -83,6 +84,20 @@ async function login(email, password) {
 
 }
 
+// ==========================================
+// 비밀번호 재설정 이메일 발송
+// ==========================================
+
+async function sendPasswordReset(email) {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return { success: true };
+  } catch (error) {
+    console.error("비밀번호 재설정 이메일 발송 실패:", error);
+    return { success: false, error };
+  }
+}
+
 
 // ==========================================
 // 로그아웃
@@ -132,6 +147,7 @@ function watchAuthState(callback) {
 export {
   signUp,
   login,
+  sendPasswordReset,
   logout,
   watchAuthState
 };

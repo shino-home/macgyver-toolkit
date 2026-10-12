@@ -13,6 +13,7 @@
   const roomInput = document.getElementById("hall-room-name");
   const rowsBody = document.getElementById("hall-quote-rows");
   const archiveList = document.getElementById("hall-archive-list");
+  const archiveSort = document.getElementById("hall-archive-sort");
   const saveStatus = document.getElementById("hall-save-status");
   const saveButton = document.getElementById("hall-save-quote");
 
@@ -28,6 +29,8 @@
   let creatingInitialQuote = false;
   let saveInProgress = null;
   let changeVersion = 0;
+  let quoteNeedsSave = false;
+  let archiveSortMode = "saved";
 
   const digitsOnly = value => String(value ?? "").replace(/[^0-9]/g, "");
   const money = value => {
@@ -35,6 +38,22 @@
     return digits ? Number(digits) : 0;
   };
   const formatMoney = value => Math.round(Number(value) || 0).toLocaleString("ko-KR");
+  const formatTenThousands = value => {
+    const tenThousands = (Number(value) || 0) / 10000;
+    return Number.isInteger(tenThousands)
+      ? String(tenThousands)
+      : tenThousands.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+  };
+  const parseTenThousands = value => {
+    let normalized = String(value ?? "").replace(/,/g, "").replace(/[^0-9.]/g, "");
+    const decimalIndex = normalized.indexOf(".");
+    if (decimalIndex >= 0) {
+      normalized = normalized.slice(0, decimalIndex + 1)
+        + normalized.slice(decimalIndex + 1).replace(/\./g, "");
+    }
+    const amount = Number(normalized);
+    return Number.isFinite(amount) ? Math.round(amount * 10000) : 0;
+  };
 
   function compactMoney(value) {
     const amount = Math.round(Number(value) || 0);
@@ -108,20 +127,22 @@
     return `<input type="text" inputmode="numeric" autocomplete="off" class="hall-row-input" data-field="${field}" data-id="${id}" aria-label="${label}" value="${formatMoney(value)}" data-step="${step}">`;
   }
 
+  function rentalInput(id, value) {
+    return `<input type="text" inputmode="decimal" autocomplete="off" class="hall-row-input hall-rental-input" data-field="rentalFee" data-id="${id}" aria-label="대관료, 만원 단위" value="${formatTenThousands(value)}">`;
+  }
+
   function renderRows() {
     rowsBody.innerHTML = "";
     currentQuote.rows.forEach(row => {
       const result = calculate(row);
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td><input class="hall-row-label" data-field="label" data-id="${row.id}" aria-label="조건 이름" maxlength="40"></td>
-        <td>${numericInput("guests", row.id, row.guests, "하객 수", 10)}</td>
-        <td>${numericInput("mealPrice", row.id, row.mealPrice, "식대", 1000)}</td>
-        <td>${numericInput("rentalFee", row.id, row.rentalFee, "대관료", 10000)}</td>
-        <td class="hall-total">${compactMoney(result.total)}</td>
-        <td>${compactMoney(result.giftTotal)}</td>
-        <td class="hall-difference ${result.difference >= 0 ? "positive" : "negative"}">${compactMoney(result.difference)}</td>
-        <td><button type="button" class="hall-delete-row" data-delete-row="${row.id}" aria-label="조건 삭제">×</button></td>
+        <td data-label="조건"><div class="hall-condition-cell"><input class="hall-row-label" data-field="label" data-id="${row.id}" aria-label="조건 이름" maxlength="40"><button type="button" class="hall-delete-row" data-delete-row="${row.id}" aria-label="조건 삭제">×</button></div></td>
+        <td data-label="하객 수">${numericInput("guests", row.id, row.guests, "하객 수", 10)}</td>
+        <td data-label="식대(원)">${numericInput("mealPrice", row.id, row.mealPrice, "식대(원)", 1000)}</td>
+        <td data-label="대관료(만원)">${rentalInput(row.id, row.rentalFee)}</td>
+        <td data-label="총비용" class="hall-total">${compactMoney(result.total)}</td>
+        <td data-label="정산후" class="hall-difference ${result.difference >= 0 ? "positive" : "negative"}">${compactMoney(result.difference)}</td>
       `;
       rowsBody.appendChild(tr);
       tr.querySelector('[data-field="label"]').value = row.label;
@@ -145,10 +166,9 @@
     const result = calculate(row);
     const cells = tr.querySelectorAll("td");
     cells[4].textContent = compactMoney(result.total);
-    cells[5].textContent = compactMoney(result.giftTotal);
-    cells[6].textContent = compactMoney(result.difference);
-    cells[6].classList.toggle("positive", result.difference >= 0);
-    cells[6].classList.toggle("negative", result.difference < 0);
+    cells[5].textContent = compactMoney(result.difference);
+    cells[5].classList.toggle("positive", result.difference >= 0);
+    cells[5].classList.toggle("negative", result.difference < 0);
   }
 
   function quoteRef(quoteId, user = currentUser) {
@@ -184,6 +204,7 @@
       await operation;
       if (currentUser?.uid === savingUser.uid && currentQuote?.id === quote.id) {
         if (changeVersion === versionAtStart) {
+          quoteNeedsSave = false;
           setStatus(options.manual ? "저장 완료" : "자동 저장 완료");
         } else {
           setStatus("새 변경 사항 저장 대기 중...");
@@ -203,6 +224,7 @@
   function scheduleSave() {
     if (!currentUser || !currentQuote) return;
     changeVersion++;
+    quoteNeedsSave = true;
     setStatus("변경 내용 저장 대기 중...");
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
@@ -231,7 +253,18 @@
       return;
     }
 
-    archiveCache.forEach(quote => {
+    const sortedQuotes = [...archiveCache].sort((a, b) => {
+      const savedA = a.updatedAt?.toMillis?.() || 0;
+      const savedB = b.updatedAt?.toMillis?.() || 0;
+      if (archiveSortMode === "opened") {
+        const openedA = a.lastOpenedAt?.toMillis?.() || savedA;
+        const openedB = b.lastOpenedAt?.toMillis?.() || savedB;
+        if (openedA !== openedB) return openedB - openedA;
+      }
+      return savedB - savedA;
+    });
+
+    sortedQuotes.forEach(quote => {
       const item = document.createElement("div");
       item.className = "hall-archive-item";
       const info = document.createElement("button");
@@ -277,10 +310,11 @@
     if (!currentUser) return;
     clearTimeout(saveTimer);
     saveTimer = null;
-    if (currentQuote) {
+    if (currentQuote && quoteNeedsSave) {
       try { await saveCurrentQuote(); } catch (_) { return; }
     }
     currentQuote = makeQuote();
+    quoteNeedsSave = true;
     changeVersion++;
     renderQuote();
     renderArchive();
@@ -292,14 +326,24 @@
     if (!currentUser) return;
     clearTimeout(saveTimer);
     saveTimer = null;
-    try { await saveCurrentQuote(); } catch (_) { return; }
+    if (quoteNeedsSave) {
+      try { await saveCurrentQuote(); } catch (_) { return; }
+    }
     const cached = archiveCache.find(item => item.id === quoteId);
     if (!cached) return;
     currentQuote = normalizeQuote(cached.id, cached);
+    quoteNeedsSave = false;
     changeVersion++;
     renderQuote();
     renderArchive();
     setStatus("저장된 견적을 불러왔습니다.");
+    cached.lastOpenedAt = { toMillis: () => Date.now() };
+    renderArchive();
+    firestore.setDoc(quoteRef(quoteId), {
+      lastOpenedAt: firestore.serverTimestamp()
+    }, { merge: true }).catch(error => {
+      console.error("견적 열람 기록 저장 실패:", error);
+    });
   }
 
   async function deleteQuote(quoteId) {
@@ -313,6 +357,7 @@
       clearTimeout(saveTimer);
       saveTimer = null;
       currentQuote = null;
+      quoteNeedsSave = false;
     }
     try {
       await firestore.deleteDoc(quoteRef(quoteId));
@@ -348,8 +393,8 @@
     if (field === "label") {
       row.label = input.value;
     } else {
-      row[field] = money(input.value);
-      formatNumericInput(input);
+      row[field] = field === "rentalFee" ? parseTenThousands(input.value) : money(input.value);
+      if (field !== "rentalFee") formatNumericInput(input);
       updateRowResults(rowId);
     }
     scheduleSave();
@@ -377,6 +422,11 @@
   document.getElementById("hall-new-quote").addEventListener("click", createNewQuote);
   saveButton.addEventListener("click", manualSave);
 
+  archiveSort.addEventListener("change", () => {
+    archiveSortMode = archiveSort.value;
+    renderArchive();
+  });
+
   archiveList.addEventListener("click", event => {
     const openButton = event.target.closest("[data-open-quote]");
     const deleteButton = event.target.closest("[data-delete-quote]");
@@ -400,6 +450,7 @@
       clearTimeout(saveTimer);
       saveTimer = null;
       currentQuote = null;
+      quoteNeedsSave = false;
       archiveCache = [];
       changeVersion++;
 
@@ -415,7 +466,6 @@
       unsubscribeArchive = firestore.onSnapshot(quotesCollection, async snapshot => {
         if (currentUser?.uid !== user.uid) return;
         archiveCache = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-        archiveCache.sort((a, b) => (b.updatedAt?.toMillis?.() || 0) - (a.updatedAt?.toMillis?.() || 0));
         renderArchive();
 
         if (!currentQuote && archiveCache.length > 0) {

@@ -5,6 +5,7 @@
 import {
   signUp,
   login,
+  sendPasswordReset,
   logout,
   watchAuthState
 } from "./auth.js";
@@ -24,10 +25,9 @@ function createAuthUI() {
 
   style.textContent = `
     #auth-ui {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
+      position: relative;
+      width: 100%;
+      z-index: 20;
       font-family: inherit;
     }
 
@@ -35,20 +35,25 @@ function createAuthUI() {
       position: relative;
       display: flex;
       align-items: center;
+      justify-content: center;
     }
 
     .auth-open-btn {
-      display: inline-flex;
+      display: flex;
       align-items: center;
+      justify-content: center;
       gap: 7px;
+      width: auto;
+      min-width: 32px;
+      min-height: 32px;
+      padding: 5px;
       border: 1px solid rgba(0, 0, 0, 0.08);
-      border-radius: 11px;
-      padding: 9px 13px;
+      border-radius: 9px;
       background: #ffffff;
       color: #333;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       cursor: pointer;
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 700;
     }
 
@@ -69,8 +74,9 @@ function createAuthUI() {
     .auth-dropdown {
       position: absolute;
       top: calc(100% + 8px);
-      right: 0;
-      width: 210px;
+      left: 0;
+      width: 100%;
+      box-sizing: border-box;
       padding: 7px;
       border: 1px solid rgba(0, 0, 0, 0.08);
       border-radius: 13px;
@@ -184,6 +190,24 @@ function createAuthUI() {
       font-size: 13px;
     }
 
+    .auth-forgot-btn {
+      display: block;
+      margin: -3px 0 8px auto;
+      padding: 2px 0;
+      border: 0;
+      background: none;
+      color: #666;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+      text-decoration: underline;
+    }
+
+    .auth-forgot-btn:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
     .auth-close-btn {
       float: right;
       border: none;
@@ -199,6 +223,10 @@ function createAuthUI() {
       font-size: 13px;
       color: #d33;
       line-height: 1.5;
+    }
+
+    .auth-message.success {
+      color: #39754d;
     }
   `;
 
@@ -268,6 +296,10 @@ function createAuthUI() {
             required
           >
 
+          <button type="button" class="auth-forgot-btn" id="auth-forgot-btn">
+            비밀번호 찾기
+          </button>
+
           <button
             type="submit"
             class="auth-submit-btn"
@@ -293,9 +325,15 @@ function createAuthUI() {
     </div>
   `;
 
-  document.body.appendChild(authUI);
+  const authAnchor = document.getElementById("auth-ui-anchor");
+  if (authAnchor) {
+    authAnchor.appendChild(authUI);
+  } else {
+    document.body.appendChild(authUI);
+  }
 
   const modal = document.getElementById("auth-modal");
+  document.body.appendChild(modal);
   const openBtn = document.getElementById("auth-open-btn");
   const closeBtn = document.getElementById("auth-close-btn");
   const dropdown = document.getElementById("auth-dropdown");
@@ -309,6 +347,7 @@ function createAuthUI() {
   const emailInput = document.getElementById("auth-email");
   const passwordInput = document.getElementById("auth-password");
   const message = document.getElementById("auth-message");
+  const forgotBtn = document.getElementById("auth-forgot-btn");
 
   let isSignUpMode = false;
   let currentUser = null;
@@ -370,6 +409,8 @@ function createAuthUI() {
   switchBtn.addEventListener("click", () => {
     isSignUpMode = !isSignUpMode;
     message.textContent = "";
+    message.classList.remove("success");
+    forgotBtn.hidden = isSignUpMode;
 
     if (isSignUpMode) {
       title.textContent = "회원가입";
@@ -381,6 +422,29 @@ function createAuthUI() {
       submitBtn.textContent = "로그인";
       switchBtn.textContent = "계정이 없나요? 회원가입";
       passwordInput.autocomplete = "current-password";
+    }
+  });
+
+  forgotBtn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    message.classList.remove("success");
+    message.textContent = "";
+
+    if (!email) {
+      message.textContent = "먼저 이메일 주소를 입력해주세요.";
+      emailInput.focus();
+      return;
+    }
+
+    forgotBtn.disabled = true;
+    const result = await sendPasswordReset(email);
+    forgotBtn.disabled = false;
+
+    if (result.success) {
+      message.classList.add("success");
+      message.textContent = "계정이 있다면 비밀번호 재설정 링크를 이메일로 보냈습니다.";
+    } else {
+      message.textContent = getAuthErrorMessage(result.error);
     }
   });
 
@@ -397,6 +461,7 @@ function createAuthUI() {
 
     submitBtn.disabled = true;
     message.textContent = "";
+    message.classList.remove("success");
 
     let result;
 
@@ -443,14 +508,17 @@ function createAuthUI() {
 
     if (currentUser) {
       openBtn.innerHTML = `
-        <span>👤 내 계정</span>
-        <span class="auth-account-arrow">▾</span>
+        <span aria-hidden="true">👤</span>
       `;
+      openBtn.setAttribute("aria-label", "내 계정");
+      openBtn.title = "내 계정";
       openBtn.classList.add("logged-in");
       emailDisplay.textContent = currentUser.email || "이메일 정보 없음";
     } else {
       closeDropdown();
       openBtn.textContent = "로그인";
+      openBtn.setAttribute("aria-label", "로그인");
+      openBtn.title = "로그인";
       openBtn.classList.remove("logged-in");
       emailDisplay.textContent = "";
     }

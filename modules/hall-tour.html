@@ -36,8 +36,8 @@
         <table class="hall-quote-table">
           <thead>
             <tr>
-              <th>조건</th><th>하객 수</th><th>식대(원)</th><th>대관료(원)</th>
-              <th>총비용</th><th>축의금 예상</th><th>차액</th><th>삭제</th>
+              <th>조건</th><th>하객 수</th><th>식대(원)</th><th>대관료(만원)</th>
+              <th>총비용</th><th>정산후</th>
             </tr>
           </thead>
           <tbody id="hall-quote-rows"></tbody>
@@ -47,14 +47,23 @@
         <button type="button" id="hall-add-row" class="hall-secondary-btn">+ 조건 추가</button>
       </div>
       <p class="hall-help">
+        대관료는 만원 단위로 입력합니다. (예: 300 = 300만원)<br>
         총비용 = 하객 수 × 식대 + 대관료<br>
-        축의금 예상 = 하객 수 × 100,000원<br>
-        차액 = 축의금 예상액 − 총비용
+        정산후 = (하객 수 × 10만원) − 총비용
       </p>
     </div>
 
     <div class="hall-panel">
-      <div class="hall-panel-title">견적 보관함</div>
+      <div class="hall-archive-heading">
+        <div class="hall-panel-title">견적 보관함</div>
+        <label class="hall-sort-control">
+          정렬
+          <select id="hall-archive-sort" aria-label="견적 보관함 정렬 기준">
+            <option value="saved">저장순</option>
+            <option value="opened">최근 열어본순</option>
+          </select>
+        </label>
+      </div>
       <p class="hall-muted">저장된 견적을 선택해 다시 열거나, 필요 없는 견적을 삭제할 수 있습니다.</p>
       <div id="hall-archive-list" class="hall-archive-list"></div>
     </div>

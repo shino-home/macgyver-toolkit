@@ -12,18 +12,22 @@
   <!-- 좌측 사이드바 -->
   <aside class="sidebar">
 
-    <!-- 브랜드 / 홈 -->
-    <div
-      class="brand"
-      id="go-home-btn"
-      title="홈 대시보드로 이동"
-    >
-      <div class="brand-badge">M</div>
+    <div class="sidebar-top">
+      <!-- 브랜드 / 홈 -->
+      <div
+        class="brand"
+        id="go-home-btn"
+        title="홈 대시보드로 이동"
+      >
+        <div class="brand-badge">M</div>
 
-      <div class="brand-text">
-        <span class="brand-title">MacGyver</span>
-        <span class="brand-sub">Toolkit</span>
+        <div class="brand-text">
+          <span class="brand-title">MacGyver</span>
+          <span class="brand-sub">Toolkit</span>
+        </div>
       </div>
+
+      <div id="auth-ui-anchor"></div>
     </div>
 
 
@@ -134,6 +138,9 @@
 
 <!-- Firebase 로그인 -->
 <script type="module" src="./js/auth-ui.js"></script>
+
+<!-- 사용자별 사이드바 순서 -->
+<script type="module" src="./js/sidebar-order.js"></script>
 
 <!-- Firestore 연결 테스트 -->
 

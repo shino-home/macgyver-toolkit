@@ -9466,3 +9466,294 @@ s {
   .hall-info-grid { grid-template-columns: 1fr; }
 }
 
+/* Sidebar drag ordering and archive sort control */
+.nav-menu.sidebar-order-enabled .nav-btn {
+  cursor: grab;
+}
+
+.nav-menu.sidebar-order-enabled .nav-btn.dragging {
+  opacity: 0.45;
+  cursor: grabbing;
+}
+
+.hall-archive-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hall-archive-heading .hall-panel-title {
+  margin-bottom: 0;
+}
+
+.hall-sort-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #777;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.hall-sort-control select {
+  padding: 7px 9px;
+  border: 1px solid #dfe4dc;
+  border-radius: 8px;
+  background: #fff;
+  color: #333;
+  font: inherit;
+}
+
+/* Compact quote comparison for phone screens */
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.sidebar-top .brand {
+  flex: 1;
+  min-width: 0;
+}
+
+#auth-ui-anchor {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.sidebar-top #auth-ui {
+  width: auto;
+}
+
+.hall-tour-section {
+  padding: 14px;
+}
+
+.hall-tour-header {
+  margin-bottom: 12px;
+}
+
+.hall-panel {
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.hall-panel-title {
+  margin-bottom: 10px;
+}
+
+.hall-info-grid {
+  gap: 8px;
+}
+
+.hall-info-grid label {
+  gap: 4px;
+}
+
+.hall-info-grid input,
+.hall-row-input,
+.hall-row-label {
+  padding: 7px;
+}
+
+.hall-condition-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hall-condition-cell .hall-row-label {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .hall-tour-section {
+    padding: 10px;
+  }
+
+  .hall-tour-header {
+    margin-bottom: 8px;
+  }
+
+  .hall-tour-header h2 {
+    margin-bottom: 4px;
+  }
+
+  .hall-panel {
+    padding: 9px;
+    margin-bottom: 8px;
+    border-radius: 11px;
+  }
+
+  .hall-panel-title {
+    margin-bottom: 7px;
+    font-size: 14px;
+  }
+
+  .hall-info-grid {
+    gap: 6px;
+  }
+
+  .hall-info-grid label {
+    gap: 3px;
+    font-size: 11px;
+  }
+
+  .hall-info-grid input {
+    padding: 6px;
+    font-size: 12px;
+  }
+
+  .hall-save-row {
+    margin-top: 8px;
+  }
+
+  .hall-save-row .hall-save-status {
+    font-size: 11px;
+  }
+
+  .hall-table-wrap {
+    overflow: visible;
+  }
+
+  .hall-quote-table,
+  .hall-quote-table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .hall-quote-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .hall-quote-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .hall-quote-table tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto auto;
+    gap: 4px;
+    padding: 5px;
+    border: 1px solid #e7ebe4;
+    border-radius: 9px;
+  }
+
+  .hall-quote-table td {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3px !important;
+    border: 0;
+    text-align: left;
+    white-space: normal;
+  }
+
+  .hall-quote-table td::before {
+    content: attr(data-label);
+    margin-bottom: 2px;
+    color: #777;
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  .hall-quote-table td:nth-child(1) { grid-column: 1; grid-row: 1; }
+  .hall-quote-table td:nth-child(2) { grid-column: 2; grid-row: 1; }
+  .hall-quote-table td:nth-child(5) { grid-column: 3; grid-row: 1; }
+  .hall-quote-table td:nth-child(3) { grid-column: 1; grid-row: 2; }
+  .hall-quote-table td:nth-child(4) { grid-column: 2; grid-row: 2; }
+  .hall-quote-table td:nth-child(6) { grid-column: 3; grid-row: 2; }
+
+  .hall-row-input,
+  .hall-row-label {
+    width: 100%;
+    padding: 5px;
+    font-size: 11px;
+  }
+
+  .hall-condition-cell {
+    gap: 3px;
+  }
+
+  .hall-delete-row {
+    width: 24px;
+    height: 27px;
+    flex: 0 0 24px;
+    font-size: 16px;
+  }
+
+  .hall-total,
+  .hall-difference {
+    font-size: 11px;
+    white-space: nowrap !important;
+  }
+
+  .hall-table-actions {
+    margin-top: 7px;
+  }
+
+  .hall-table-actions .hall-secondary-btn {
+    padding: 6px 9px;
+    border-radius: 7px;
+    font-size: 12px;
+  }
+
+  .hall-help {
+    margin-top: 7px;
+    font-size: 11px;
+  }
+
+  .hall-archive-heading {
+    gap: 6px;
+  }
+
+  .hall-sort-control {
+    gap: 4px;
+    font-size: 11px;
+  }
+
+  .hall-sort-control select {
+    padding: 5px;
+    font-size: 11px;
+  }
+
+  .hall-archive-item {
+    gap: 6px;
+    padding: 7px;
+  }
+}
+
+@media (max-width: 900px) {
+  .sidebar-top {
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .sidebar-top .brand {
+    flex: 0 0 auto;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+
+  #auth-ui-anchor {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
